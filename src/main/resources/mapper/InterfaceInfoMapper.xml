@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yeguo.yeguoapi.mapper.InterfaceInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.yeguo.yeguoapi.model.entity.InterfaceInfo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="method" column="method" jdbcType="VARCHAR"/>
+            <result property="url" column="url" jdbcType="VARCHAR"/>
+            <result property="requestParams" column="request_params" jdbcType="VARCHAR"/>
+            <result property="requestHeader" column="request_header" jdbcType="VARCHAR"/>
+            <result property="responseHeader" column="response_header" jdbcType="VARCHAR"/>
+            <result property="responseFormat" column="response_format" jdbcType="VARCHAR"/>
+            <result property="requestExample" column="request_example" jdbcType="VARCHAR"/>
+            <result property="interfaceStatus" column="interface_status" jdbcType="TINYINT"/>
+            <result property="invokingCount" column="invoking_count" jdbcType="BIGINT"/>
+            <result property="avatarUrl" column="avatar_url" jdbcType="VARCHAR"/>
+            <result property="requiredGoldCoins" column="required_gold_coins" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,name,
+        description,method,url,
+        request_params,request_header,response_header,
+        response_format,request_example,interface_status,
+        invoking_count,avatar_url,required_gold_coins,
+        create_time,update_time,is_delete
+    </sql>
+</mapper>
