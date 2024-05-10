@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalException {
 
-    @ExceptionHandler(BusinessException.class)
-    public Result businessExceptionHandler(BusinessException e) {
-
-        return null;
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public Result runtimeExceptionHandler(RuntimeException e) {
-
-        return null;
-    }
+//    @ExceptionHandler(BusinessException.class)
+//    public Result businessExceptionHandler(BusinessException e) {
+//
+//        return null;
+//    }
+//
+//    @ExceptionHandler(RuntimeException.class)
+//    public Result runtimeExceptionHandler(RuntimeException e) {
+//
+//        return null;
+//    }
 }
