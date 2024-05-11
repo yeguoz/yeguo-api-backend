@@ -1,7 +1,7 @@
 package com.yeguo.yeguoapi.controller;
 
 import cn.hutool.core.util.StrUtil;
-import com.yeguo.yeguoapi.common.ErrorCode;
+import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.common.Result;
 import com.yeguo.yeguoapi.common.ResultUtils;
 import com.yeguo.yeguoapi.constant.UserConstant;
@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +42,7 @@ public class UserController {
     @PostMapping("register")
     public Result<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
         }
         String username = userRegisterRequest.getUsername(); // username 可以为空
         String userAccount = userRegisterRequest.getUserAccount();
@@ -52,7 +51,7 @@ public class UserController {
 
         // 使用hutool工具StrUtil
         if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数包含空数据");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
         }
         long id = userServiceImpl.userRegister(username,userAccount, userPassword, checkPassword);
         return ResultUtils.success(id);
@@ -68,14 +67,14 @@ public class UserController {
     @PostMapping("login")
     public Result<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
 
         // 使用hutool工具StrUtil
         if (StrUtil.hasBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数包含空数据");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
         }
         UserVO userVO = userServiceImpl.userLogin(userAccount, userPassword, req);
         return ResultUtils.success(userVO);
@@ -87,7 +86,7 @@ public class UserController {
         HttpSession session = req.getSession();
         UserVO currentUser = (UserVO) session.getAttribute(UserConstant.USER_LOGIN_STATE);
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "您当前未登录");
+            throw new BusinessException(ResponseCode.NOT_LOGIN_ERROR, "您当前未登录");
         }
         // 根据session中用户id查询数据库
         User user = userServiceImpl.selectById(currentUser.getId());
@@ -110,7 +109,7 @@ public class UserController {
     public Result<ArrayList<UserVO>> selectAll(HttpServletRequest req) {
         HttpSession session = req.getSession();
         if (!isAdmin(req)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
+            throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
         }
         ArrayList<UserVO> userList = userServiceImpl.selectAll();
         return ResultUtils.success(userList);
@@ -120,12 +119,12 @@ public class UserController {
     @DeleteMapping("{id}")
     public Result<Integer> remove(@PathVariable Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
+            throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
         }
         // todo 返回值应该是id
         int result = userServiceImpl.rmByid(id);
         if (result < 1) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "删除失败");
         }
         return ResultUtils.success(result);
     }
@@ -133,7 +132,7 @@ public class UserController {
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession();
         UserVO currentUser = (UserVO)session.getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (currentUser == null) throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "您当前未登录");
+        if (currentUser == null) throw new BusinessException(ResponseCode.NOT_LOGIN_ERROR, "您当前未登录");
         return currentUser.getUserRole() == UserConstant.ADMIN_ROLE;
     }
 

@@ -1,12 +1,14 @@
 package com.yeguo.yeguoapi.exception;
 
 
-import com.yeguo.yeguoapi.common.ErrorCode;
+import com.yeguo.yeguoapi.common.ResponseCode;
+import lombok.Getter;
 
 /**
  * 业务异常类
  * @author yeguo
  */
+@Getter
 public class BusinessException extends RuntimeException{
 
     private final int code;
@@ -18,9 +20,9 @@ public class BusinessException extends RuntimeException{
         this.description = description;
     }
 
-    public BusinessException(ErrorCode errorCode, String description) {
-        super(errorCode.getMessage());
-        this.code = errorCode.getCode();
+    public BusinessException(ResponseCode responseCode, String description) {
+        super(responseCode.getMessage());
+        this.code = responseCode.getCode();
         this.description = description;
     }
 

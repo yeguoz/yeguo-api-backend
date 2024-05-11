@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yeguo.yeguoapi.common.ErrorCode;
+import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.constant.SecretConstant;
 import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 
-import static jdk.internal.org.jline.utils.InfoCmp.Capability.user1;
 
 
 /**
@@ -54,31 +53,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public long userRegister(String username,String userAccount, String userPassword, String checkPassword) {
         if (StrUtil.hasBlank(userAccount,userPassword,checkPassword)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求包含空数据");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求包含空数据");
         }
         // 账号不能包含特殊字符
         String regex = "^[a-zA-Z0-9_-]{4,16}$";
         if (!userAccount.matches(regex)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号包含特殊字符");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号包含特殊字符");
         }
         // 账号长度不小于4位
         if (userAccount.length() < 4){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号长度过短");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号长度过短");
         }
         // 密码不小于8位
         if (userPassword.length() < 8){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度过短");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码长度过短");
         }
         // 密码和校验密码相同
         if (!userPassword.equals(checkPassword)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"两次密码不一致");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"两次密码不一致");
         }
         // 账号不能重复
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getUserAccount,userAccount);
         Long count = userMapper.selectCount(lambdaQueryWrapper);
         if (count > 0){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号已被使用");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号已被使用");
         }
         // 使用hutool进行密码加密
         String encryptedPassword= sm4.encryptHex(userPassword);
@@ -105,7 +104,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"密钥生成失败");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"密钥生成失败");
         }
 
         // 创建用户
@@ -120,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         int result = userMapper.insert(user);
         // 插入失败返回 -1
         if ( result < 1){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"注册失败，请联系管理员");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"注册失败，请联系管理员");
         }
         // 插入成功 返回id
         return user.getId();
@@ -130,20 +129,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public UserVO userLogin(String userAccount, String userPassword, HttpServletRequest req) {
         // 数据不能为空
         if (StrUtil.hasBlank(userAccount,userPassword)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求包含空数据");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求包含空数据");
         }
         // 账号长度不小于4位
         if (userAccount.length() < 4){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号长度过短");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号长度过短");
         }
         // 密码不小于8位
         if (userPassword.length() < 8){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度过短");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码长度过短");
         }
         // 账号不能包含特殊字符
         String regex = "^[a-zA-Z0-9_-]{4,16}$";
         if (!userAccount.matches(regex)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号包含特殊字符");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号包含特殊字符");
         }
 
         // 查询该用户
@@ -152,7 +151,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = userMapper.selectOne(lambdaQueryWrapper);
         // 查询错误
         if (user == null){
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"该用户不存在");
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"该用户不存在");
         }
 
         String password = user.getUserPassword();
@@ -160,7 +159,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String decryptedPassword = sm4.decryptStr(password, CharsetUtil.CHARSET_UTF_8);
 
         if (!decryptedPassword.equals(userPassword)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码错误");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码错误");
         }
 
         // 返回脱敏对象
@@ -176,7 +175,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User selectById(Long id) {
         User user = userMapper.selectById(id);
-        if (user==null) throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"用户不存在");
+        if (user==null) throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"用户不存在");
         return user;
     }
 
@@ -186,7 +185,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 查询所有User
         ArrayList<User> users = (ArrayList<User>) userMapper.selectList(lambdaQueryWrapper);
-        if (users == null) throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"查询为空,请检查代码");
+        if (users == null) throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"查询为空,请检查代码");
 
         // 对每个用户脱敏 返回安全用户信息
         ArrayList<UserVO> result = new ArrayList<>();
