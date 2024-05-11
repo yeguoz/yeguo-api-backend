@@ -9,12 +9,14 @@ import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.constant.SecretConstant;
 import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
+import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import com.yeguo.yeguoapi.model.entity.User;
 import com.yeguo.yeguoapi.model.vo.UserVO;
 import com.yeguo.yeguoapi.service.UserService;
 import com.yeguo.yeguoapi.mapper.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,7 @@ import java.util.Base64;
 * @description 针对表【user(用户表)】的数据库操作Service实现
 * @createDate 2024-05-08 18:58:22
 */
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
@@ -199,8 +202,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     // 按id删除
     @Override
     public int rmByid(Long id) {
-        int result = userMapper.deleteById(id);
-        return result;
+        int i;
+        try {
+             i = userMapper.deleteById(id);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return i;
+    }
+
+    // 按照id修改
+    @Override
+    public int upById(UserUpdateRequest userUpdateRequest) {
+        User user = new User();
+        user.setId(userUpdateRequest.getId());
+        user.setUsername(userUpdateRequest.getUsername());
+        user.setUserAccount(userUpdateRequest.getUserAccount());
+        user.setAvatarUrl(userUpdateRequest.getAvatarUrl());
+        user.setGender(userUpdateRequest.getGender());
+        user.setPhone(userUpdateRequest.getPhone());
+        user.setEmail(userUpdateRequest.getEmail());
+        user.setGoldCoin(userUpdateRequest.getGoldCoin());
+        user.setUserStatus(userUpdateRequest.getUserStatus());
+        user.setUserRole(userUpdateRequest.getUserRole());
+        return userMapper.updateById(user);
     }
 
     public UserVO getUserVO(User user) {

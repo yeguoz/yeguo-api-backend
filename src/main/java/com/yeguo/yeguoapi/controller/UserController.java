@@ -8,6 +8,7 @@ import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
 import com.yeguo.yeguoapi.model.dto.user.UserLoginRequest;
 import com.yeguo.yeguoapi.model.dto.user.UserRegisterRequest;
+import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import com.yeguo.yeguoapi.model.entity.User;
 import com.yeguo.yeguoapi.model.vo.UserVO;
 import com.yeguo.yeguoapi.service.UserService;
@@ -117,11 +118,11 @@ public class UserController {
 
     // 删除用户
     @DeleteMapping("{id}")
-    public Result<Integer> remove(@PathVariable Long id, HttpServletRequest req) {
+    public Result<Integer> removeById(@PathVariable Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
         }
-        // todo 返回值应该是id
+        // 删除成功返回值为 1
         int result = userServiceImpl.rmByid(id);
         if (result < 1) {
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "删除失败");
@@ -129,6 +130,18 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    @PutMapping("/update")
+    public Result<Integer> updateById(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest req) {
+        if (!isAdmin(req)) {
+            throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
+        }
+        // 更新成功返回值为 1
+        int i = userServiceImpl.upById(userUpdateRequest);
+        if (i < 1) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
+        }
+        return ResultUtils.success(i);
+    }
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession();
         UserVO currentUser = (UserVO)session.getAttribute(UserConstant.USER_LOGIN_STATE);

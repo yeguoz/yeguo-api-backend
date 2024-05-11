@@ -1,5 +1,6 @@
 package com.yeguo.yeguoapi.service;
 
+import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import com.yeguo.yeguoapi.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yeguo.yeguoapi.model.vo.UserVO;
@@ -19,4 +20,6 @@ public interface UserService extends IService<User> {
    User selectById(Long id);
    ArrayList<UserVO> selectAll();
    int rmByid(Long id);
+
+   int upById(UserUpdateRequest userUpdateRequest);
 }
