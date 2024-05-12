@@ -9,6 +9,7 @@ import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.constant.SecretConstant;
 import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
+import com.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
 import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import com.yeguo.yeguoapi.model.entity.User;
 import com.yeguo.yeguoapi.model.vo.UserVO;
@@ -29,64 +30,70 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 
-
 /**
-* @author Lenovo
-* @description 针对表【user(用户表)】的数据库操作Service实现
-* @createDate 2024-05-08 18:58:22
-*/
+ * @author yeguo
+ * @description 针对表【user(用户表)】的数据库操作Service实现
+ * @createDate 2024-05-08 18:58:22
+ */
 @Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
-    implements UserService{
+        implements UserService {
     private static final byte[] passwordSecretKey = SecretConstant.PASSWORD_SECRET_KEY.getBytes(StandardCharsets.UTF_8);
     // sm4加密
-    private static final SymmetricCrypto sm4 = new SymmetricCrypto("SM4",passwordSecretKey);
+    private static final SymmetricCrypto sm4 = new SymmetricCrypto("SM4", passwordSecretKey);
 
     @Autowired
     private UserMapper userMapper;
 
     /**
-     *
+     * 用户注册
      * @param userAccount
      * @param userPassword
      * @param checkPassword
-     * @return
+     * @return long
      */
     @Override
-    public long userRegister(String username,String userAccount, String userPassword, String checkPassword) {
-        if (StrUtil.hasBlank(userAccount,userPassword,checkPassword)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求包含空数据");
+    public long userRegister(String username, String userAccount, String userPassword, String checkPassword) {
+        if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求包含空数据");
         }
         // 账号不能包含特殊字符
         String regex = "^[a-zA-Z0-9_-]{4,16}$";
-        if (!userAccount.matches(regex)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号包含特殊字符");
+        if (!userAccount.matches(regex)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "账号包含特殊字符");
         }
         // 账号长度不小于4位
-        if (userAccount.length() < 4){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号长度过短");
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "账号长度过短");
         }
         // 密码不小于8位
-        if (userPassword.length() < 8){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码长度过短");
+        if (userPassword.length() < 8) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码长度过短");
         }
         // 密码和校验密码相同
-        if (!userPassword.equals(checkPassword)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"两次密码不一致");
+        if (!userPassword.equals(checkPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "两次密码不一致");
         }
         // 账号不能重复
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(User::getUserAccount,userAccount);
-        Long count = userMapper.selectCount(lambdaQueryWrapper);
-        if (count > 0){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号已被使用");
+        lambdaQueryWrapper.eq(User::getUserAccount, userAccount);
+        Long count = null;
+
+        try {
+            count = userMapper.selectCount(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (count > 0) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "账号已被使用");
         }
         // 使用hutool进行密码加密
-        String encryptedPassword= sm4.encryptHex(userPassword);
+        String encryptedPassword = sm4.encryptHex(userPassword);
         /*
-        *  生成accessKey 和 secretKey
-        * */
+         *  生成accessKey 和 secretKey
+         * */
         // 获取当前时间戳
         long timestamp = Instant.now().toEpochMilli();
         // 生成6位随机数
@@ -107,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"密钥生成失败");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密钥生成失败");
         }
 
         // 创建用户
@@ -119,99 +126,140 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setSecretKey(secretKey);
 
         // 插入数据库
-        int result = userMapper.insert(user);
+        int result = 0;
+        try {
+            result = userMapper.insert(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         // 插入失败返回 -1
-        if ( result < 1){
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"注册失败，请联系管理员");
+        if (result < 1) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "注册失败，请联系管理员");
         }
         // 插入成功 返回id
         return user.getId();
     }
 
+    /**
+     * 用户登录
+     * @param userAccount
+     * @param userPassword
+     * @param req
+     * @return UserVO
+     */
     @Override
     public UserVO userLogin(String userAccount, String userPassword, HttpServletRequest req) {
         // 数据不能为空
-        if (StrUtil.hasBlank(userAccount,userPassword)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求包含空数据");
+        if (StrUtil.hasBlank(userAccount, userPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求包含空数据");
         }
         // 账号长度不小于4位
-        if (userAccount.length() < 4){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号长度过短");
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "账号长度过短");
         }
         // 密码不小于8位
-        if (userPassword.length() < 8){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码长度过短");
+        if (userPassword.length() < 8) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码长度过短");
         }
         // 账号不能包含特殊字符
         String regex = "^[a-zA-Z0-9_-]{4,16}$";
-        if (!userAccount.matches(regex)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"账号包含特殊字符");
+        if (!userAccount.matches(regex)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "账号包含特殊字符");
         }
 
         // 查询该用户
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(User::getUserAccount,userAccount);
+        lambdaQueryWrapper.eq(User::getUserAccount, userAccount);
         User user = userMapper.selectOne(lambdaQueryWrapper);
         // 查询错误
-        if (user == null){
-            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"该用户不存在");
+        if (user == null) {
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "该用户不存在");
         }
 
         String password = user.getUserPassword();
         // 查询成功，对数据库用户密码解密和登录用户密码比较
         String decryptedPassword = sm4.decryptStr(password, CharsetUtil.CHARSET_UTF_8);
 
-        if (!decryptedPassword.equals(userPassword)){
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"密码错误");
+        if (!decryptedPassword.equals(userPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
         }
 
         // 返回脱敏对象
         UserVO userVO = getUserVO(user);
         // 设置session
         HttpSession session = req.getSession();
-        session.setAttribute(UserConstant.USER_LOGIN_STATE,userVO);
+        session.setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
 
         return userVO;
     }
 
-    // 根据id查询用户
+    /**
+     * 按id查询用户
+     * @param id
+     * @return User
+     */
     @Override
     public User selectById(Long id) {
-        User user = userMapper.selectById(id);
-        if (user==null) throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"用户不存在");
+        User user = null;
+        try {
+            user = userMapper.selectById(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (user == null)
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "用户不存在");
         return user;
     }
 
-    // 查询所有用户
+    /**
+     * 查询所有用户
+     * @return ArrayList<UserVO>
+     */
     @Override
     public ArrayList<UserVO> selectAll() {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 查询所有User
-        ArrayList<User> users = (ArrayList<User>) userMapper.selectList(lambdaQueryWrapper);
-        if (users == null) throw new BusinessException(ResponseCode.NOT_FOUND_ERROR,"查询为空,请检查代码");
+        ArrayList<User> userList = null;
+        try {
+            userList = (ArrayList<User>) userMapper.selectList(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (userList == null)
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "查询为空,请检查代码");
 
         // 对每个用户脱敏 返回安全用户信息
         ArrayList<UserVO> result = new ArrayList<>();
-        for (User user : users) {
+        for (User user : userList) {
             UserVO userVO = getUserVO(user);
             result.add(userVO);
         }
         return result;
     }
 
-    // 按id删除
+    /**
+     * 按id删除用户
+     * @param id
+     * @return int
+     */
     @Override
     public int rmByid(Long id) {
-        int i;
+        int result;
         try {
-             i = userMapper.deleteById(id);
+            result = userMapper.deleteById(id);
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage());
         }
-        return i;
+        if (result < 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "删除失败,请检查代码");
+        return result;
     }
 
-    // 按照id修改
+    /**
+     * 按id修改用户信息
+     * @param userUpdateRequest
+     * @return int
+     */
     @Override
     public int upById(UserUpdateRequest userUpdateRequest) {
         User user = new User();
@@ -225,7 +273,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setGoldCoin(userUpdateRequest.getGoldCoin());
         user.setUserStatus(userUpdateRequest.getUserStatus());
         user.setUserRole(userUpdateRequest.getUserRole());
-        return userMapper.updateById(user);
+        int result = 0;
+        try {
+            result = userMapper.updateById(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (result < 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败,请检查代码");
+        return result;
+    }
+
+    /**
+     * 获取当前用户信息
+     * @param req
+     * @return UserVO
+     */
+    @Override
+    public UserVO getCurrentUser(HttpServletRequest req) {
+        HttpSession session = req.getSession();
+        UserVO currentUser = (UserVO) session.getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (currentUser == null) {
+            throw new BusinessException(ResponseCode.NOT_LOGIN_ERROR, "您当前未登录");
+        }
+        // 根据session中用户id查询数据库
+        User user = null;
+        try {
+            user = selectById(currentUser.getId());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        // 对用户数据脱敏
+        return getUserVO(user);
+    }
+
+    /**
+     * 按查询参数动态查询
+     * @param userQueryRequest
+     * @return ArrayList<UserVO>
+     */
+    @Override
+    public ArrayList<UserVO> dynamicQuery(UserQueryRequest userQueryRequest) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(userQueryRequest.getId() != null, User::getId, userQueryRequest.getId())
+                .eq(userQueryRequest.getUsername() != null, User::getUsername, userQueryRequest.getUsername())
+                .eq(userQueryRequest.getUserAccount() != null, User::getUserAccount, userQueryRequest.getUserAccount())
+                .eq(userQueryRequest.getGender() != null, User::getGender, userQueryRequest.getGender())
+                .eq(userQueryRequest.getPhone() != null, User::getPhone, userQueryRequest.getPhone())
+                .eq(userQueryRequest.getEmail() != null, User::getEmail, userQueryRequest.getEmail())
+                .eq(userQueryRequest.getGoldCoin() != null, User::getGoldCoin, userQueryRequest.getGoldCoin())
+                .eq(userQueryRequest.getUserStatus() != null, User::getUserStatus, userQueryRequest.getUserStatus())
+                .eq(userQueryRequest.getUserRole() != null, User::getUserRole, userQueryRequest.getUserRole());
+        ArrayList<User> userList = null;
+        try {
+            userList = (ArrayList<User>) userMapper.selectList(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (userList == null || userList.isEmpty()) {
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, userList == null ? "查询失败，请检查代码" : "查询为空");
+        }
+
+        // 对每个用户脱敏 返回安全用户信息
+        ArrayList<UserVO> result = new ArrayList<>();
+        for (User user : userList) {
+            UserVO userVO = getUserVO(user);
+            result.add(userVO);
+        }
+        return result;
     }
 
     public UserVO getUserVO(User user) {

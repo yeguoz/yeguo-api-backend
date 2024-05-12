@@ -1,5 +1,6 @@
 package com.yeguo.yeguoapi.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.common.Result;
@@ -7,6 +8,7 @@ import com.yeguo.yeguoapi.common.ResultUtils;
 import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
 import com.yeguo.yeguoapi.model.dto.user.UserLoginRequest;
+import com.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
 import com.yeguo.yeguoapi.model.dto.user.UserRegisterRequest;
 import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import com.yeguo.yeguoapi.model.entity.User;
@@ -16,10 +18,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
+import org.aspectj.weaver.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+
+import static com.yeguo.yeguoapi.utils.IsAdmin.isAdmin;
 
 
 /**
@@ -37,8 +42,6 @@ public class UserController {
 
     /*
      *  注册
-     *  从请求体中读取数据存入
-     *  调用service层来处理注册逻辑
      * */
     @PostMapping("register")
     public Result<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -60,10 +63,6 @@ public class UserController {
 
     /*
      *  登录
-     *  从请求体中读取数据存入UserLoginDTO
-     *  userLoginDTO为空返回null,
-     *  userLoginDTO某个属性为空返回null
-     *  调用service层来处理登录逻辑
      * */
     @PostMapping("login")
     public Result<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
@@ -81,23 +80,18 @@ public class UserController {
         return ResultUtils.success(userVO);
     }
 
-    // 查询当前用户
+    /*
+    * 查询当前用户
+    * */
     @GetMapping("current")
     public Result<UserVO> getCurrentUser(HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        UserVO currentUser = (UserVO) session.getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (currentUser == null) {
-            throw new BusinessException(ResponseCode.NOT_LOGIN_ERROR, "您当前未登录");
-        }
-        // 根据session中用户id查询数据库
-        User user = userServiceImpl.selectById(currentUser.getId());
-
-        // 对用户数据脱敏
-        UserVO userVO = userServiceImpl.getUserVO(user);
+        UserVO userVO =  userServiceImpl.getCurrentUser(req);
         return ResultUtils.success(userVO);
     }
 
-    // 退出登录
+    /*
+     * 退出登录
+     * */
     @PostMapping("logout")
     public Result<Integer> logout(HttpServletRequest req) {
         HttpSession session = req.getSession();
@@ -105,18 +99,28 @@ public class UserController {
         return ResultUtils.success(1);
     }
 
-    // 查询所有用户
-    @GetMapping("selectAll")
-    public Result<ArrayList<UserVO>> selectAll(HttpServletRequest req) {
+    /*
+    * 查询所有用户
+    * */
+    @GetMapping("dynamicQuery")
+    public Result<ArrayList<UserVO>> dynamicQuery(UserQueryRequest userQueryRequest, HttpServletRequest req) {
         HttpSession session = req.getSession();
+        ArrayList<UserVO> userVOList = null;
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
         }
-        ArrayList<UserVO> userList = userServiceImpl.selectAll();
-        return ResultUtils.success(userList);
+        // hutool BeanUtil 属性都为空
+        if (BeanUtil.isEmpty(userQueryRequest)) {
+            userVOList = userServiceImpl.selectAll();
+        } else {
+            userVOList = userServiceImpl.dynamicQuery(userQueryRequest);
+        }
+        return ResultUtils.success(userVOList);
     }
 
-    // 删除用户
+    /*
+     * 删除用户
+     * */
     @DeleteMapping("{id}")
     public Result<Integer> removeById(@PathVariable Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
@@ -124,29 +128,19 @@ public class UserController {
         }
         // 删除成功返回值为 1
         int result = userServiceImpl.rmByid(id);
-        if (result < 1) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "删除失败");
-        }
         return ResultUtils.success(result);
     }
 
+    /*
+     * 改
+     * */
     @PutMapping("/update")
     public Result<Integer> updateById(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
         }
         // 更新成功返回值为 1
-        int i = userServiceImpl.upById(userUpdateRequest);
-        if (i < 1) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
-        }
-        return ResultUtils.success(i);
+        int result = userServiceImpl.upById(userUpdateRequest);
+        return ResultUtils.success(result);
     }
-    private boolean isAdmin(HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        UserVO currentUser = (UserVO)session.getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (currentUser == null) throw new BusinessException(ResponseCode.NOT_LOGIN_ERROR, "您当前未登录");
-        return currentUser.getUserRole() == UserConstant.ADMIN_ROLE;
-    }
-
 }
