@@ -7,7 +7,7 @@ import com.yeguo.yeguoapi.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-public class IsAdmin {
+public class IsAdminUtil {
 
     public static boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession();

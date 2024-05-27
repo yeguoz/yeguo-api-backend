@@ -5,26 +5,20 @@ import cn.hutool.core.util.StrUtil;
 import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.common.Result;
 import com.yeguo.yeguoapi.common.ResultUtils;
-import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
-import com.yeguo.yeguoapi.model.dto.user.UserLoginRequest;
-import com.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
-import com.yeguo.yeguoapi.model.dto.user.UserRegisterRequest;
-import com.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
-import com.yeguo.yeguoapi.model.entity.User;
+import com.yeguo.yeguoapi.model.dto.user.*;
 import com.yeguo.yeguoapi.model.vo.UserVO;
 import com.yeguo.yeguoapi.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
-import org.aspectj.weaver.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
-import static com.yeguo.yeguoapi.utils.IsAdmin.isAdmin;
+import static com.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
 
 /**
@@ -55,6 +49,28 @@ public class UserController {
 
         // 使用hutool工具StrUtil
         if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
+        }
+        long id = userServiceImpl.userRegister(username,userAccount, userPassword, checkPassword);
+        return ResultUtils.success(id);
+    }
+
+
+
+
+    /*
+     *  注册
+     * */
+    @PostMapping("emailRegister")
+    public Result<Long> userEmailRegister(@RequestBody UserEmailRegisterRequest userEmailRegisterRequest) {
+        if (userEmailRegisterRequest == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
+        }
+        String email = userEmailRegisterRequest.getEmail(); // username 可以为空
+        String verifyCode = userEmailRegisterRequest.getVerifyCode();
+
+        // 使用hutool工具StrUtil
+        if (StrUtil.hasBlank(email, verifyCode)) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
         }
         long id = userServiceImpl.userRegister(username,userAccount, userPassword, checkPassword);

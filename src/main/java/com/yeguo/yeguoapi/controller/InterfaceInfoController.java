@@ -10,7 +10,6 @@ import com.yeguo.yeguoapi.model.dto.interfaceInfo.InterfaceInfoQueryRequest;
 import com.yeguo.yeguoapi.model.dto.interfaceInfo.InterfaceInfoRegisterRequest;
 import com.yeguo.yeguoapi.model.dto.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.yeguo.yeguoapi.model.vo.InterfaceInfoVO;
-import com.yeguo.yeguoapi.model.vo.UserVO;
 import com.yeguo.yeguoapi.service.InterfaceInfoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
-import static com.yeguo.yeguoapi.utils.IsAdmin.isAdmin;
+import static com.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
 @Slf4j
 @RestController
