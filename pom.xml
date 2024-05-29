@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.yeguo</groupId>
-    <artifactId>yeguoAPI</artifactId>
+    <artifactId>yeguo-API</artifactId>
     <version>0.0.1</version>
-    <name>yeguoAPI</name>
-    <description>yeguoAPI</description>
+    <name>yeguo-API</name>
+    <description>yeguo-API</description>
 
     <properties>
         <java.version>17</java.version>
