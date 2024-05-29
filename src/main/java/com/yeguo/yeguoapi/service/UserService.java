@@ -10,21 +10,30 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 
 /**
-* @author yeguo
-* @description 针对表【user(用户表)】的数据库操作Service
-* @createDate 2024-05-08 18:58:22
-*/
+ * @author yeguo
+ *  针对表【user(用户表)】的数据库操作Service
+ *  2024-05-08 18:58:22
+ */
 public interface UserService extends IService<User> {
-   long  userRegister(String username,String userAccount,String userPassword,String checkPassword);
-   UserVO userLogin(String userAccount, String userPassword, HttpServletRequest req);
-   UserVO getUserVO(User user);
-   User selectById(Long id);
-   ArrayList<UserVO> selectAll();
-   int rmByid(Long id);
+    long userRegister(String username, String userAccount, String userPassword, String checkPassword);
 
-   int upById(UserUpdateRequest userUpdateRequest);
+    UserVO userLogin(String userAccount, String userPassword, HttpServletRequest req);
 
-   UserVO getCurrentUser(HttpServletRequest req);
+    UserVO getUserVO(User user);
 
-   ArrayList<UserVO>  dynamicQuery(UserQueryRequest userQueryRequest);
+    User selectById(Long id);
+
+    ArrayList<UserVO> selectAll();
+
+    int rmByid(Long id);
+
+    int upById(UserUpdateRequest userUpdateRequest);
+
+    UserVO getCurrentUser(HttpServletRequest req);
+
+    ArrayList<UserVO> dynamicQuery(UserQueryRequest userQueryRequest);
+
+    long userEmailRegister(String email, String verifyCode, HttpServletRequest req);
+
+    UserVO userEmailLogin(String email, String verifyCode, HttpServletRequest req);
 }

@@ -13,17 +13,17 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class EmailUtil {
-
+    public static String verifyCode = "";
     /**
      * 发送验证码
      *
      * @param receiveMail 邮件接收者
-     * @throws Exception
+     *  Exception
      */
-    public static boolean sendMail(String receiveMail) {
+    public static Integer sendMail(String receiveMail) {
         Properties props = new Properties();
         // 开启debug调试，以便在控制台查看
-        props.setProperty("mail.debug", "true");
+        props.setProperty("mail.debug", "false");
         // 设置邮件服务器主机名
         props.setProperty("mail.host", "smtp.163.com");
         // 发送服务器需要身份验证
@@ -31,7 +31,7 @@ public class EmailUtil {
         // 发送邮件协议名称
         props.setProperty("mail.transport.protocol", "smtp");
         // 开启SSL加密，否则会失败
-        Message message = null;
+        Message message;
         try {
             MailSSLSocketFactory sf = new MailSSLSocketFactory();
             sf.setTrustAllHosts(true);
@@ -51,7 +51,7 @@ public class EmailUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return true;
+        return 1;
     }
 
     /**
@@ -64,7 +64,7 @@ public class EmailUtil {
         Random random = new Random();
 
         // 生成6位随机验证码
-        String verifyCode = ""+random.nextInt(899999) + 100000;
+        verifyCode = ""+(random.nextInt(899999) + 100000);
         System.out.println("verifyCode:"+verifyCode);
         // 创建邮件对象
         MimeMessage message = new MimeMessage(session);

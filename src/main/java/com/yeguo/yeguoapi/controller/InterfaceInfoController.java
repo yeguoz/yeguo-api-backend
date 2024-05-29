@@ -12,7 +12,6 @@ import com.yeguo.yeguoapi.model.dto.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.yeguo.yeguoapi.model.vo.InterfaceInfoVO;
 import com.yeguo.yeguoapi.service.InterfaceInfoService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -72,12 +71,9 @@ public class InterfaceInfoController {
      *  查询
      * */
     @GetMapping("dynamicQuery")
-    public Result<ArrayList<InterfaceInfoVO>> dynamicQuery(InterfaceInfoQueryRequest interfaceInfoQueryRequest, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        ArrayList<InterfaceInfoVO> interfaceInfoVOList = null;
-        if (!isAdmin(req)) {
-            throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
-        }
+    public Result<ArrayList<InterfaceInfoVO>> dynamicQuery(InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
+        ArrayList<InterfaceInfoVO> interfaceInfoVOList;
+
         if (BeanUtil.isEmpty(interfaceInfoQueryRequest)) {
             interfaceInfoVOList = interfaceInfoServiceImpl.selectAll();
         } else {

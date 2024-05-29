@@ -2,7 +2,6 @@ package com.yeguo.yeguoapi;
 
 import com.yeguo.yeguoapi.constant.SecretConstant;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -18,8 +17,6 @@ import java.util.Base64;
 
 
 import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 //@SpringBootTest
@@ -94,4 +91,10 @@ class ApplicationTests {
                     mex.printStackTrace();
                 }
             }
+
+    @Test
+    public void test1() {
+        long currentTimeMillis = System.currentTimeMillis();
+        System.out.println("当前时间（毫秒时间戳）: " + currentTimeMillis);
+    }
 }

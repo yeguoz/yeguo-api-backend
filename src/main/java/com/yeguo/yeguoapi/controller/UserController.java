@@ -5,10 +5,12 @@ import cn.hutool.core.util.StrUtil;
 import com.yeguo.yeguoapi.common.ResponseCode;
 import com.yeguo.yeguoapi.common.Result;
 import com.yeguo.yeguoapi.common.ResultUtils;
+import com.yeguo.yeguoapi.constant.UserConstant;
 import com.yeguo.yeguoapi.exception.BusinessException;
 import com.yeguo.yeguoapi.model.dto.user.*;
 import com.yeguo.yeguoapi.model.vo.UserVO;
 import com.yeguo.yeguoapi.service.UserService;
+import com.yeguo.yeguoapi.utils.EmailUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
@@ -55,28 +59,6 @@ public class UserController {
         return ResultUtils.success(id);
     }
 
-
-
-
-    /*
-     *  注册
-     * */
-    @PostMapping("emailRegister")
-    public Result<Long> userEmailRegister(@RequestBody UserEmailRegisterRequest userEmailRegisterRequest) {
-        if (userEmailRegisterRequest == null) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
-        }
-        String email = userEmailRegisterRequest.getEmail(); // username 可以为空
-        String verifyCode = userEmailRegisterRequest.getVerifyCode();
-
-        // 使用hutool工具StrUtil
-        if (StrUtil.hasBlank(email, verifyCode)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
-        }
-        long id = userServiceImpl.userRegister(username,userAccount, userPassword, checkPassword);
-        return ResultUtils.success(id);
-    }
-
     /*
      *  登录
      * */
@@ -93,6 +75,74 @@ public class UserController {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
         }
         UserVO userVO = userServiceImpl.userLogin(userAccount, userPassword, req);
+        return ResultUtils.success(userVO);
+    }
+
+
+    /*
+     * 发送验证码
+     * */
+    @PostMapping("verifyCode")
+    public Result<Integer> userEmailVerifyCode(@RequestBody VerifyCodeEmail verifyCodeEmail,HttpServletRequest req) {
+        String email = verifyCodeEmail.getEmail();
+        if (email == null || email.isEmpty()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求参数包含空数据！");
+        }
+        String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        // 编译正则表达式
+        Pattern pattern = Pattern.compile(regex);
+        // 创建匹配器
+        Matcher matcher = pattern.matcher(email);
+        if (!matcher.matches()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR,"邮箱格式错误！");
+        }
+        Integer result = EmailUtil.sendMail(email);
+        // 将 验证码 和 过期时间戳 存入该用户的session中
+        HttpSession session = req.getSession();
+        session.setAttribute(UserConstant.VERIFY_CODE,EmailUtil.verifyCode);
+        long expirationTime = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后
+        session.setAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME, expirationTime);
+
+        System.out.println(EmailUtil.verifyCode);
+        if (result != 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"发送失败");
+
+        return ResultUtils.success(result);
+    }
+
+    /*
+     *  邮箱注册
+     * */
+    @PostMapping("emailRegister")
+    public Result<Long> userEmailRegister(@RequestBody UserEmailRegisterLoginRequest userEmailRegisterLoginRequest, HttpServletRequest req) {
+        if (userEmailRegisterLoginRequest == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
+        }
+        String email = userEmailRegisterLoginRequest.getEmail();
+        String verifyCode = userEmailRegisterLoginRequest.getVerifyCode();
+        // 使用hutool工具StrUtil
+        if (StrUtil.hasBlank(email, verifyCode))
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
+
+        long id = userServiceImpl.userEmailRegister(email,verifyCode,req);
+        return ResultUtils.success(id);
+    }
+
+    /*
+     *  邮箱登录
+     * */
+    @PostMapping("emailLogin")
+    public Result<UserVO> userEmailLogin(@RequestBody UserEmailRegisterLoginRequest userEmailRegisterLoginRequest, HttpServletRequest req) {
+        if (userEmailRegisterLoginRequest == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
+        }
+        String email = userEmailRegisterLoginRequest.getEmail();
+        String verifyCode = userEmailRegisterLoginRequest.getVerifyCode();
+        // 使用hutool工具StrUtil
+        if (StrUtil.hasBlank(email, verifyCode))
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
+
+        UserVO userVO = userServiceImpl.userEmailLogin(email,verifyCode,req);
         return ResultUtils.success(userVO);
     }
 
@@ -120,8 +170,7 @@ public class UserController {
     * */
     @GetMapping("dynamicQuery")
     public Result<ArrayList<UserVO>> dynamicQuery(UserQueryRequest userQueryRequest, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        ArrayList<UserVO> userVOList = null;
+        ArrayList<UserVO> userVOList;
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
         }

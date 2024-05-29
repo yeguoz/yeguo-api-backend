@@ -4,15 +4,26 @@ public interface UserConstant {
     /**
      * 用户登录态key
      */
-    public static final String USER_LOGIN_STATE = "userLoginState";
+    String USER_LOGIN_STATE = "userLoginState";
+
+    /**
+     * 用户邮箱注册验证码
+     */
+    String VERIFY_CODE = "userRegisterVerifyCode";
+
+
+    /**
+     * 用户邮箱注册验证码过期时间
+     */
+    String VERIFY_CODE_EXPIRATION_TIME = "expirationTime";
 
     /**
      * 普通用户
      */
-    public static final int DEFAULT_ROLE = 0;
+    int DEFAULT_ROLE = 0;
 
     /**
      * 管理员
      */
-    public static final int ADMIN_ROLE = 1;
+    int ADMIN_ROLE = 1;
 }

@@ -12,7 +12,7 @@ create table user
         primary key,
     username      varchar(128)                                                                      null comment '用户名',
     user_account  varchar(256)                                                                      null comment '用户账号',
-    user_password varchar(512)                                                                      not null comment '用户密码',
+    user_password varchar(512)     default NULL                                                     comment '用户密码',
     avatar_url    varchar(1024)    default 'https://cdn.jsdelivr.net/gh/ye-guo/Images/images/2.jpg' null comment '头像',
     gender        tinyint unsigned                                                                  null comment '性别',
     phone         varchar(128)                                                                      null comment '电话',
