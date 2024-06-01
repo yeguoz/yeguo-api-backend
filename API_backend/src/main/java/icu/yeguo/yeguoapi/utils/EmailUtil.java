@@ -13,7 +13,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class EmailUtil {
-    public static String verifyCode = "";
+    public static String verifyCode;
     /**
      * 发送验证码
      *

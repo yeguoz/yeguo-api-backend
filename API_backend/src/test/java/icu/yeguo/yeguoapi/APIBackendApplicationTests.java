@@ -2,7 +2,6 @@ package icu.yeguo.yeguoapi;
 
 import icu.yeguo.yeguoapi.constant.SecretConstant;
 import org.junit.jupiter.api.Test;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -14,8 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-
-
 import javax.mail.*;
 import java.util.Properties;
 
