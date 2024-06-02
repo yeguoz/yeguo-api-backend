@@ -2,3 +2,21 @@ spring:
   application:
     name:
       API_gataway
+  cloud:
+    gateway:
+      default-filters:
+        - AddRequestHeader=source, yeguo_api_gateway # 流量染色
+      routes:
+        - id: api_router
+          uri: http://localhost:8081/api/interface/test
+          predicates:
+            - Path=/api/**
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: trace
+server:
+  port: 8082

@@ -13,7 +13,7 @@
     <modules>
         <module>API_backend</module>
         <module>API_interface</module>
-
+        <module>API_gataway</module>
     </modules>
 
     <properties>
@@ -30,10 +30,16 @@
         <bcprov-jdk15to18.version>1.74</bcprov-jdk15to18.version>
         <javax.mail.version>1.6.2</javax.mail.version>
         <spring-boot-maven-plugin.version>3.2.5</spring-boot-maven-plugin.version>
+        <spring-cloud-gateway.version>4.1.4</spring-cloud-gateway.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-gateway</artifactId>
+                <version>${spring-cloud-gateway.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
