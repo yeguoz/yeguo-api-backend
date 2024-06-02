@@ -20,6 +20,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         //5、响应日志
         //6、接口调用计数
         log.info("custom global filter");
+
         return chain.filter(exchange);
     }
 
