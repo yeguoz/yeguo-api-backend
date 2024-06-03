@@ -62,3 +62,24 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+#dubbo:
+#  application:
+#    name: dubbo-springboot-provider
+#    logger: slf4j
+#  protocol:
+#    name: tri
+#    port: 50052
+#  registry:
+#    address: nacos://${nacos.address:127.0.0.1}:8848?username=nacos&password=nacos
+dubbo:
+  application:
+    qosEnable: false
+    enable-file-cache: false
+    name: dubbo-springboot-provider
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: nacos-registry
+    address: nacos://localhost:8848

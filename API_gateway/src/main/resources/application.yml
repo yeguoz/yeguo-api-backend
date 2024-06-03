@@ -1,0 +1,42 @@
+spring:
+  application:
+    name:
+      API_gataway
+  cloud:
+    gateway:
+      default-filters:
+        - AddRequestHeader=source, yeguo_api_gateway # 流量染色
+      routes:
+        - id: api_router
+          uri: http://localhost:8081/api/interface/test
+          predicates:
+            - Path=/api/**
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: trace
+server:
+  port: 8082
+
+#dubbo:
+#  application:
+#    name: dubbo-springboot-consumer
+#    logger: slf4j
+#    qos-port: 33333
+#  registry:
+#    address: nacos://${nacos.address:127.0.0.1}:8848?username=nacos&password=nacos
+
+dubbo:
+  application:
+    enable-file-cache: false
+    name: dubbo-springboot-consumer
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: nacos-registry
+    # todo 线上修改为服务器内网地址，参考nacos启动后的链接
+    address: nacos://localhost:8848

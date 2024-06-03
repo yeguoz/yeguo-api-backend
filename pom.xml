@@ -13,14 +13,15 @@
     <modules>
         <module>API_backend</module>
         <module>API_interface</module>
-        <module>API_gataway</module>
+        <module>API_gateway</module>
+        <module>API_common</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>3.2.5</spring-boot.version>
+        <spring-boot.version>3.3.0</spring-boot.version>
         <knife4j.version>4.4.0</knife4j.version>
         <mysql.version>8.0.33</mysql.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
@@ -29,12 +30,22 @@
         <hutool-all.version>5.8.27</hutool-all.version>
         <bcprov-jdk15to18.version>1.74</bcprov-jdk15to18.version>
         <javax.mail.version>1.6.2</javax.mail.version>
-        <spring-boot-maven-plugin.version>3.2.5</spring-boot-maven-plugin.version>
+        <spring-boot-maven-plugin.version>3.3.0</spring-boot-maven-plugin.version>
         <spring-cloud-gateway.version>4.1.4</spring-cloud-gateway.version>
+        <dubbo.version>3.2.12</dubbo.version>
+        <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-bom</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--spring cloud gateway-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-gateway</artifactId>
@@ -91,6 +102,11 @@
                 <groupId>com.sun.mail</groupId>
                 <artifactId>javax.mail</artifactId>
                 <version>${javax.mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

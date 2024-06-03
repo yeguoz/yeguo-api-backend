@@ -11,13 +11,11 @@ import icu.yeguo.yeguoapi.model.dto.user.*;
 import icu.yeguo.yeguoapi.model.vo.UserVO;
 import icu.yeguo.yeguoapi.service.UserService;
 import icu.yeguo.yeguoapi.utils.EmailUtil;
+import lombok.extern.slf4j.Slf4j;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

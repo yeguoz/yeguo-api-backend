@@ -8,7 +8,7 @@
         <groupId>icu.yeguo</groupId>
         <artifactId>yeguo-API</artifactId>
         <version>0.0.1</version>
-        <relativePath>../pom.xml</relativePath> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>API_backend</artifactId>
 
@@ -22,8 +22,22 @@
     <dependencies>
         <dependency>
             <groupId>icu.yeguo</groupId>
+            <artifactId>API_common</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>icu.yeguo</groupId>
             <artifactId>yeguo-api-sdk</artifactId>
             <version>0.0.1</version>
+        </dependency>
+        <!-- dubbo -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-nacos-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -92,6 +106,10 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
     </dependencies>
 
