@@ -32,6 +32,7 @@ server:
 dubbo:
   application:
     enable-file-cache: false
+    qosEnable: false
     name: dubbo-springboot-consumer
   protocol:
     name: dubbo
