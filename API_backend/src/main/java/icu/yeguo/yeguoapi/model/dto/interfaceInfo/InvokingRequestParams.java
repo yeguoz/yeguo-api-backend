@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 @Data
-public class ReqParams implements Serializable {
+public class InvokingRequestParams implements Serializable {
     @Serial
     private static final long serialVersionUID = 5865897477172175107L;
     private Long id;
