@@ -2,7 +2,6 @@ package icu.yeguo.yeguoapi.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -57,16 +56,10 @@ public class InterfaceInfo implements Serializable {
     private String requestParams;
 
     /**
-     * 请求头
+     * 响应参数
      */
-    @TableField(value = "request_header")
-    private String requestHeader;
-
-    /**
-     * 响应头
-     */
-    @TableField(value = "response_header")
-    private String responseHeader;
+    @TableField(value = "response_params")
+    private String responseParams;
 
     /**
      * 响应格式
@@ -79,6 +72,12 @@ public class InterfaceInfo implements Serializable {
      */
     @TableField(value = "request_example")
     private String requestExample;
+
+    /**
+     * 响应示例
+     */
+    @TableField(value = "response_example")
+    private String responseExample;
 
     /**
      * 接口状态 0-关闭 1-开启
@@ -105,6 +104,18 @@ public class InterfaceInfo implements Serializable {
     private Long requiredGoldCoins;
 
     /**
+     * 请求头
+     */
+    @TableField(value = "request_header")
+    private String requestHeader;
+
+    /**
+     * 响应头
+     */
+    @TableField(value = "response_header")
+    private String responseHeader;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time")
@@ -122,7 +133,6 @@ public class InterfaceInfo implements Serializable {
     @TableLogic
     private Integer isDelete;
 
-    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

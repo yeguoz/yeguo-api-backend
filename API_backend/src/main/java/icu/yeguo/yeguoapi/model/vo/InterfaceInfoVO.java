@@ -17,13 +17,15 @@ public class InterfaceInfoVO implements Serializable {
     private String method;
     private String url;
     private String requestParams;
-    private String requestHeader;
-    private String responseHeader;
+    private String responseParams;
     private String responseFormat;
     private String requestExample;
+    private String responseExample;
     private Integer interfaceStatus;
     private Long invokingCount;
     private String avatarUrl;
     private Long requiredGoldCoins;
+    private String requestHeader;
+    private String responseHeader;
     private Date createTime;
 }

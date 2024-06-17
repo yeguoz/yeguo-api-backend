@@ -209,14 +209,16 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         interfaceInfoVO.setMethod(interfaceInfo.getMethod());
         interfaceInfoVO.setUrl(interfaceInfo.getUrl());
         interfaceInfoVO.setRequestParams(interfaceInfo.getRequestParams());
-        interfaceInfoVO.setRequestHeader(interfaceInfo.getRequestHeader());
-        interfaceInfoVO.setResponseHeader(interfaceInfo.getResponseHeader());
+        interfaceInfoVO.setResponseParams(interfaceInfo.getResponseParams());
         interfaceInfoVO.setResponseFormat(interfaceInfo.getResponseFormat());
         interfaceInfoVO.setRequestExample(interfaceInfo.getRequestExample());
+        interfaceInfoVO.setResponseExample(interfaceInfo.getResponseExample());
         interfaceInfoVO.setInterfaceStatus(interfaceInfo.getInterfaceStatus());
         interfaceInfoVO.setInvokingCount(interfaceInfo.getInvokingCount());
         interfaceInfoVO.setAvatarUrl(interfaceInfo.getAvatarUrl());
         interfaceInfoVO.setRequiredGoldCoins(interfaceInfo.getRequiredGoldCoins());
+        interfaceInfoVO.setRequestHeader(interfaceInfo.getRequestHeader());
+        interfaceInfoVO.setResponseHeader(interfaceInfo.getResponseHeader());
         interfaceInfoVO.setCreateTime(interfaceInfo.getCreateTime());
         return interfaceInfoVO;
     }
