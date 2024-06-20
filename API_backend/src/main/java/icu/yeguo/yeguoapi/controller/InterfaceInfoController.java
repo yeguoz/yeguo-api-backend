@@ -2,11 +2,9 @@ package icu.yeguo.yeguoapi.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import icu.yeguo.yeguoapi.common.ResponseCode;
 import icu.yeguo.yeguoapi.common.Result;
 import icu.yeguo.yeguoapi.common.ResultUtils;
@@ -19,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -92,46 +89,40 @@ public class InterfaceInfoController {
     }
 
     @PostMapping("onlineInvoking")
-    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest) {
+    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest, HttpServletRequest req) {
         // todo
-        // 校验 ak和sk
-        System.out.println("request:"+invokingRequest);
-        System.out.println("irp:"+ Arrays.toString(invokingRequest.getIrp()));
+        // 校验 ak和sk 这个在网关做
+        String signature = req.getHeader("X-Signature");
+        log.info("signature:"+signature);
+        log.info("invokingRequest:"+invokingRequest);
+        log.info("irp:"+Arrays.toString(invokingRequest.getIrp()));
         InvokingRequestParams[] irp = invokingRequest.getIrp();
         String result = null;
-        // todo
         /*
-        * [{"id":1717209446502,"index":0,"name":"dsfdsf","value":"dsfsdf"},
-        * {"id":1717209452591,"index":1,"name":"dsfsdfsdf","value":"fsdfsdf"}]
-        * 遍历数据，把name和value，加入paramMap中，设置其他请求头等
+        * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
         * */
-//        {[{},{}],method,url}
         // GET 请求
         if ("GET".equals(invokingRequest.getMethod())) {
-            //可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
             HashMap<String, Object> paramMap = new HashMap<>();
             for (InvokingRequestParams item : irp) {
                 paramMap.put(item.getName(), item.getValue());
             }
-            result = HttpUtil.get(invokingRequest.getUrl(), paramMap);
-//            JSONObject jsonObject = JSONUtil.parseObj(result);
-//            if ((int)jsonObject.get("code")==400) {
-//                throw new BusinessException(ResponseCode.PARAMS_ERROR,(String)jsonObject.get("msg"));
-//            }
-//            if ((int)jsonObject.get("code")==500) {
-//                throw new BusinessException(ResponseCode.SYSTEM_ERROR,(String)jsonObject.get("msg"));
-//            }
-            System.out.println(result);
+            result = HttpRequest.get(invokingRequest.getUrl())
+                    .header("X-Signature", signature)//头信息，多个头信息多次调用此方法即可
+                    .form(paramMap)//表单内容
+                    .timeout(6*60*60*1000)//超时，毫秒
+                    .execute().body();
         }
-        // POST 请求
-        if ("POST".equals(invokingRequest.getMethod())) {
-            HashMap<String, Object> paramMap = new HashMap<>();
-            for (InvokingRequestParams item : irp) {
-                paramMap.put(item.getName(), item.getValue());
 
-            }
-            result= HttpUtil.post(invokingRequest.getUrl(), paramMap);
-        }
+        // POST 请求
+//        if ("POST".equals(invokingRequest.getMethod())) {
+//            HashMap<String, Object> paramMap = new HashMap<>();
+//            for (InvokingRequestParams item : irp) {
+//                paramMap.put(item.getName(), item.getValue());
+//
+//            }
+//            result= HttpUtil.post(invokingRequest.getUrl(), paramMap);
+//        }
 
         return ResultUtils.success(result);
     }

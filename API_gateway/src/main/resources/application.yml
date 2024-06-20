@@ -8,7 +8,7 @@ spring:
         - AddRequestHeader=source, yeguo_api_gateway # 流量染色
       routes:
         - id: api_router
-          uri: http://localhost:8081/api/interface/test
+          uri: http://localhost:8081/api
           predicates:
             - Path=/api/**
 
@@ -20,14 +20,6 @@ logging:
           gateway: trace
 server:
   port: 8082
-
-#dubbo:
-#  application:
-#    name: dubbo-springboot-consumer
-#    logger: slf4j
-#    qos-port: 33333
-#  registry:
-#    address: nacos://${nacos.address:127.0.0.1}:8848?username=nacos&password=nacos
 
 dubbo:
   application:

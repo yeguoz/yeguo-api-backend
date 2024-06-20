@@ -1,29 +1,34 @@
 package icu.yeguo.yeguoapiinterface.controller;
 
-import icu.yeguo.yeguoapisdk.client.YGAPIClient;
-import icu.yeguo.yeguoapisdk.model.User;
+import cn.hutool.http.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 
 @Slf4j
 @RestController
-@RequestMapping("/interface")
+@RequestMapping("/")
 public class InterfaceServiceController {
 
-    @GetMapping("test")
-    public String test() {
-        return "测试";
+    @GetMapping("qq/info")
+    public String getQQInfo(@RequestParam("qq") Integer qq) {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("qq", qq);
+        return HttpUtil.get("https://api.oioweb.cn/api/qq/info", paramMap);
     }
 
-    @GetMapping("getName")
-    public String getNameByGet(@RequestParam("name")  String name) {
-        return "GET-你的名字是：" + name;
+    @GetMapping("ip/ipaddress")
+    public String getIpAddress(@RequestParam("ip") String ip) {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("ip", ip);
+        return HttpUtil.get("https://api.oioweb.cn/api/ip/ipaddress", paramMap);
     }
 
-    @PostMapping("postName")
-    public String getNameByPost(@RequestBody User user) {
-        return "POST-你的名字是：" + user.getName();
+    @GetMapping("weather")
+    public String getCityWeather(@RequestParam("city_name") String cityName) {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("city_name", cityName);
+        return HttpUtil.get("https://api.oioweb.cn/api/weather/weather", paramMap);
     }
 
 }

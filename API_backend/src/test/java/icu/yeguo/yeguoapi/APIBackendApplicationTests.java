@@ -1,7 +1,11 @@
 package icu.yeguo.yeguoapi;
 
 import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.crypto.digest.HMac;
+import cn.hutool.crypto.digest.HmacAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
 import org.junit.jupiter.api.Test;
 import javax.mail.Message;
@@ -16,10 +20,36 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import javax.mail.*;
+import java.util.HashMap;
 import java.util.Properties;
 
 //@SpringBootTest
 class APIBackendApplicationTests {
+
+    @Test
+    void generateSignature() {
+        String testStr = "OOxaZmStjtzIJhyfhp6JOqHs6s38m6ILbHOV6iZtllA=zKOYgQAE2CdCidvR74O3XEGQAz+k5B6dbLt8UGQHpqk=";
+
+        // 此处密钥如果有非ASCII字符，考虑编码
+        byte[] key = SecretConstant.SIGNATURE_KEY.getBytes();
+        HMac mac = new HMac(HmacAlgorithm.HmacMD5, key);
+
+        // b977f4b13f93f549e06140971bded384
+        String macHex1 = mac.digestHex(testStr);
+        System.out.println(macHex1);
+    }
+
+    @Test
+    void httpReqTest() {
+
+        //可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("irp", "1419593965");
+        paramMap.put("test", "这是个 测试");
+        HttpRequest form = HttpRequest.post("http://localhost:8082/api/qq/info")
+                .form(paramMap);//表单内容
+        System.out.println(form);
+    }
 
     @Test
     void crypto() {
