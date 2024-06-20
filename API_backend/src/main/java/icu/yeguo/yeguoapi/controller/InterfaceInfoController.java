@@ -2,9 +2,7 @@ package icu.yeguo.yeguoapi.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpUtil;
 import icu.yeguo.yeguoapi.common.ResponseCode;
 import icu.yeguo.yeguoapi.common.Result;
 import icu.yeguo.yeguoapi.common.ResultUtils;

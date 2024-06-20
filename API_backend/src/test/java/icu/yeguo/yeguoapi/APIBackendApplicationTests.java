@@ -5,7 +5,6 @@ import cn.hutool.crypto.digest.HMac;
 import cn.hutool.crypto.digest.HmacAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpUtil;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
 import org.junit.jupiter.api.Test;
 import javax.mail.Message;
