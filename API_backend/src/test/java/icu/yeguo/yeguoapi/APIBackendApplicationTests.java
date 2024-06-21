@@ -28,12 +28,10 @@ class APIBackendApplicationTests {
     @Test
     void generateSignature() {
         String testStr = "OOxaZmStjtzIJhyfhp6JOqHs6s38m6ILbHOV6iZtllA=zKOYgQAE2CdCidvR74O3XEGQAz+k5B6dbLt8UGQHpqk=";
-
-        // 此处密钥如果有非ASCII字符，考虑编码
+        // 此处密钥如果有非ASCII字符
         byte[] key = SecretConstant.SIGNATURE_KEY.getBytes();
         HMac mac = new HMac(HmacAlgorithm.HmacMD5, key);
 
-        // b977f4b13f93f549e06140971bded384
         String macHex1 = mac.digestHex(testStr);
         System.out.println(macHex1);
     }
