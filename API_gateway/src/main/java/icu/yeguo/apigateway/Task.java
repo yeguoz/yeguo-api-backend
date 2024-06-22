@@ -16,7 +16,7 @@
 // */
 //package icu.yeguo.apigateway;
 //
-//import icu.yeguo.apicommon.service.DemoService;
+//import icu.yeguo.apicommon.service.CommonService;
 //import org.apache.dubbo.config.annotation.DubboReference;
 //import org.springframework.boot.CommandLineRunner;
 //import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@
 //@Component
 //public class Task implements CommandLineRunner {
 //    @DubboReference
-//    private DemoService demoService;
+//    private CommonService demoService;
 //
 //    @Override
 //    public void run(String... args) throws Exception {

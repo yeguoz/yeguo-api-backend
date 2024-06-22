@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="icu.yeguo.yeguoapi.mapper.UserMapper">
 
-    <resultMap id="BaseResultMap" type="icu.yeguo.yeguoapi.model.entity.User">
+    <resultMap id="BaseResultMap" type="icu.yeguo.apicommon.model.entity.User">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="username" column="username" jdbcType="VARCHAR"/>
             <result property="userAccount" column="user_account" jdbcType="VARCHAR"/>

@@ -1,6 +1,6 @@
 package icu.yeguo.apigateway;
 
-import icu.yeguo.apicommon.service.DemoService;
+import icu.yeguo.apicommon.service.CommonService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,11 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class ApiGatewayApplicationTest {
 
     @DubboReference
-    private DemoService demoService;
+    private CommonService commonService;
 
     @Test
     public void test1() {
-        String s = demoService.sayHello("jsp");
+        String s = commonService.sayHello("jsp");
         System.out.println("Test:"+s);
 
     }

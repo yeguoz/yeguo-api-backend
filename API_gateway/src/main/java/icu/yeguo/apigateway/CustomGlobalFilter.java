@@ -1,6 +1,9 @@
 package icu.yeguo.apigateway;
 
+import icu.yeguo.apicommon.model.entity.User;
+import icu.yeguo.apicommon.service.CommonService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -16,9 +19,11 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
+
+    @DubboReference
+    private CommonService commonService;
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // todo 请求
         //1、请求日志
         ServerHttpRequest request = exchange.getRequest();
         log.info("请求id:"+request.getId());
@@ -33,14 +38,35 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         log.info("请求体:"+request.getBody());
         //2、访问控制-黑白名单
         //3、用户鉴权
+        log.info("X-AccessKey:"+request.getHeaders().getFirst("X-AccessKey"));
         log.info("X-Signature:"+request.getHeaders().getFirst("X-Signature"));
+        String x_accessKey = request.getHeaders().getFirst("X-AccessKey");
+        String x_signature = request.getHeaders().getFirst("X-Signature");
         // 将accessKey设置为请求头传过来，查询数据库用户，进行验证权限，如此签名可以再加入写用户信息，通过查表对其签名验证
+        // 查询数据库 远程调用
+        User user = commonService.getUser(x_accessKey);
+        if (user == null) {
+            // 用户不存在
+            log.info("用户不存在");
+            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+        // 将ak和sk拼接起来进行签名
+        String message = user.getAccessKey() + user.getSecretKey();
+        String signature = commonService.generateSignature(message);
+        log.info("验证签名:"+signature);
+        // 验证签名和前端传过来的是否相同
+        if (!signature.equals(x_signature)) {
+            log.info("签名不一致");
+            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
         //4、请求接口
+        return chain.filter(exchange);
         // todo 响应
         //5、响应日志
         //6、接口调用计数
         // 放行
-        return chain.filter(exchange);
     }
 
     // 数字越小，优先级越高

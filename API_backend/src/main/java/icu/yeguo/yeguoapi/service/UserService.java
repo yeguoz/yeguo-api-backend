@@ -2,7 +2,7 @@ package icu.yeguo.yeguoapi.service;
 
 import icu.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
 import icu.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
-import icu.yeguo.yeguoapi.model.entity.User;
+import icu.yeguo.apicommon.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import icu.yeguo.yeguoapi.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;

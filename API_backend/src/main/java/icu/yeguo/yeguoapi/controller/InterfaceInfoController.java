@@ -48,7 +48,7 @@ public class InterfaceInfoController {
      *  删除
      * */
     @DeleteMapping("{id}")
-    public Result<Integer> removeById(@PathVariable Long id, HttpServletRequest req) {
+    public Result<Integer> removeById(@PathVariable("id") Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
         }
@@ -90,15 +90,17 @@ public class InterfaceInfoController {
     public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest, HttpServletRequest req) {
         // todo
         // 校验 ak和sk 这个在网关做
+        /*
+         * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
+         * */
         String signature = req.getHeader("X-Signature");
-        log.info("signature:"+signature);
+        String accessKey = req.getHeader("X-AccessKey");
         log.info("invokingRequest:"+invokingRequest);
         log.info("irp:"+Arrays.toString(invokingRequest.getIrp()));
+        log.info("accessKey:"+accessKey);
+        log.info("signature:"+signature);
         InvokingRequestParams[] irp = invokingRequest.getIrp();
         String result = null;
-        /*
-        * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
-        * */
         // GET 请求
         if ("GET".equals(invokingRequest.getMethod())) {
             HashMap<String, Object> paramMap = new HashMap<>();
@@ -106,7 +108,8 @@ public class InterfaceInfoController {
                 paramMap.put(item.getName(), item.getValue());
             }
             result = HttpRequest.get(invokingRequest.getUrl())
-                    .header("X-Signature", signature)//头信息，多个头信息多次调用此方法即可
+                    .header("X-Signature", signature)
+                    .header("X-AccessKey",accessKey)//头信息，多个头信息多次调用此方法即可
                     .form(paramMap)//表单内容
                     .timeout(6*60*60*1000)//超时，毫秒
                     .execute().body();
