@@ -6,5 +6,5 @@ public interface CommonService {
     String sayHello(String name);
     User getUser(String accessKey);
     String generateSignature(String message);
-
+    void invokingCount(long interfaceInfoId);
 }
