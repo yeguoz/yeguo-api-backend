@@ -8,6 +8,7 @@ import icu.yeguo.yeguoapi.common.ResultUtils;
 import icu.yeguo.yeguoapi.constant.UserConstant;
 import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.dto.user.*;
+import icu.yeguo.yeguoapi.model.vo.ASKeyVO;
 import icu.yeguo.yeguoapi.model.vo.UserVO;
 import icu.yeguo.yeguoapi.service.UserService;
 import icu.yeguo.yeguoapi.utils.EmailUtil;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +27,7 @@ import static icu.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
 /**
  * 用户 Controller
+ *
  * @author yeguo
  * 2024/5/8
  */
@@ -53,7 +56,7 @@ public class UserController {
         if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
         }
-        long id = userServiceImpl.userRegister(username,userAccount, userPassword, checkPassword);
+        long id = userServiceImpl.userRegister(username, userAccount, userPassword, checkPassword);
         return ResultUtils.success(id);
     }
 
@@ -84,7 +87,7 @@ public class UserController {
     public Result<Integer> userEmailVerifyCode(@RequestBody VerifyCodeEmail verifyCodeEmail, HttpServletRequest req) {
         String email = verifyCodeEmail.getEmail();
         if (email == null || email.isEmpty()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请求参数包含空数据！");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据！");
         }
         String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         // 编译正则表达式
@@ -92,18 +95,18 @@ public class UserController {
         // 创建匹配器
         Matcher matcher = pattern.matcher(email);
         if (!matcher.matches()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"邮箱格式错误！");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱格式错误！");
         }
         Integer result = EmailUtil.sendMail(email);
         // 将 验证码 和 过期时间戳 存入该用户的session中
         HttpSession session = req.getSession();
-        session.setAttribute(UserConstant.VERIFY_CODE,EmailUtil.verifyCode);
+        session.setAttribute(UserConstant.VERIFY_CODE, EmailUtil.verifyCode);
         long expirationTime = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后
         session.setAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME, expirationTime);
 
         System.out.println(EmailUtil.verifyCode);
         if (result != 1)
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"发送失败");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "发送失败");
 
         return ResultUtils.success(result);
     }
@@ -122,7 +125,7 @@ public class UserController {
         if (StrUtil.hasBlank(email, verifyCode))
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
 
-        long id = userServiceImpl.userEmailRegister(email,verifyCode,req);
+        long id = userServiceImpl.userEmailRegister(email, verifyCode, req);
         return ResultUtils.success(id);
     }
 
@@ -140,16 +143,16 @@ public class UserController {
         if (StrUtil.hasBlank(email, verifyCode))
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数包含空数据");
 
-        UserVO userVO = userServiceImpl.userEmailLogin(email,verifyCode,req);
+        UserVO userVO = userServiceImpl.userEmailLogin(email, verifyCode, req);
         return ResultUtils.success(userVO);
     }
 
     /*
-    * 查询当前用户
-    * */
+     * 查询当前用户
+     * */
     @GetMapping("current")
     public Result<UserVO> getCurrentUser(HttpServletRequest req) {
-        UserVO userVO =  userServiceImpl.getCurrentUser(req);
+        UserVO userVO = userServiceImpl.getCurrentUser(req);
         return ResultUtils.success(userVO);
     }
 
@@ -164,8 +167,8 @@ public class UserController {
     }
 
     /*
-    * 查询所有用户
-    * */
+     * 查询所有用户
+     * */
     @GetMapping("dynamicQuery")
     public Result<ArrayList<UserVO>> dynamicQuery(UserQueryRequest userQueryRequest, HttpServletRequest req) {
         ArrayList<UserVO> userVOList;
@@ -206,4 +209,21 @@ public class UserController {
         int result = userServiceImpl.upById(userUpdateRequest);
         return ResultUtils.success(result);
     }
+
+    @PutMapping("personInfoUpdate")
+    public Result<Integer> personInfoUpdate(@RequestBody UserPersonUpdateParams userPersonUpdateParams, HttpServletRequest req) {
+        // 更新成功返回值为 1
+        int result = userServiceImpl.upPersonInfo(userPersonUpdateParams);
+        if (result != 1) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"更新失败");
+        }
+        return ResultUtils.success(result);
+    }
+
+    @PutMapping("{id}")
+    public Result<ASKeyVO> personKeysUpdate(@PathVariable("id") Long id) {
+        ASKeyVO result = userServiceImpl.upASKey(id);
+        return ResultUtils.success(result);
+    }
 }
+
