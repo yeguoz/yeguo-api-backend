@@ -1,9 +1,11 @@
 package icu.yeguo.yeguoapi.service;
 
+import icu.yeguo.yeguoapi.model.dto.user.UserPersonUpdateParams;
 import icu.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
 import icu.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
 import icu.yeguo.apicommon.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import icu.yeguo.yeguoapi.model.vo.ASKeyVO;
 import icu.yeguo.yeguoapi.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -36,4 +38,8 @@ public interface UserService extends IService<User> {
     long userEmailRegister(String email, String verifyCode, HttpServletRequest req);
 
     UserVO userEmailLogin(String email, String verifyCode, HttpServletRequest req);
+
+    int upPersonInfo(UserPersonUpdateParams userPersonUpdateParams);
+
+    ASKeyVO upASKey(Long id);
 }
