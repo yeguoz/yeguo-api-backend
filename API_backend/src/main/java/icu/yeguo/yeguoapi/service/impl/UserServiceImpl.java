@@ -10,8 +10,10 @@ import icu.yeguo.yeguoapi.common.ResponseCode;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
 import icu.yeguo.yeguoapi.constant.UserConstant;
 import icu.yeguo.yeguoapi.exception.BusinessException;
+import icu.yeguo.yeguoapi.model.dto.user.UserPersonUpdateParams;
 import icu.yeguo.yeguoapi.model.dto.user.UserQueryRequest;
 import icu.yeguo.yeguoapi.model.dto.user.UserUpdateRequest;
+import icu.yeguo.yeguoapi.model.vo.ASKeyVO;
 import icu.yeguo.yeguoapi.model.vo.UserVO;
 import icu.yeguo.yeguoapi.service.UserService;
 import icu.yeguo.yeguoapi.mapper.UserMapper;
@@ -26,8 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -387,6 +388,74 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userVO;
     }
 
+    @Override
+    public int upPersonInfo(UserPersonUpdateParams userPersonUpdateParams) {
+        // 邮箱规则
+        String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        if (!userPersonUpdateParams.getEmail().matches(regex)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱格式错误");
+        }
+        // 手机规则
+        String regexPhone = "^1[3-9]\\d{9}$";
+        if (!userPersonUpdateParams.getPhone().matches(regexPhone)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "手机格式错误");
+        }
+        // 邮箱不能重复
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getEmail, userPersonUpdateParams.getEmail());
+        Long count;
+        User user;
+        try {
+            count = userMapper.selectCount(lambdaQueryWrapper);
+            user = selectById(userPersonUpdateParams.getId());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        // 不填邮箱默认是传递空字符串
+        if (count > 0 && !userPersonUpdateParams.getEmail().equals(user.getEmail())) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱已被使用");
+        }
+        user.setUsername(userPersonUpdateParams.getUsername());
+        user.setEmail(userPersonUpdateParams.getEmail());
+        user.setPhone(userPersonUpdateParams.getPhone());
+        user.setAvatarUrl(userPersonUpdateParams.getAvatarUrl());
+        int result;
+        try {
+            result = userMapper.updateById(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (result < 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败,请检查代码");
+        return 1;
+    }
+
+    @Override
+    public ASKeyVO upASKey(Long id) {
+        Map<String, String> keys = generateAccessAndSecretKeys();
+        // 取到id 查询然后更新
+        User user;
+        int i;
+        try {
+            user = userMapper.selectById(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (user == null)
+            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "用户不存在");
+        user.setAccessKey(keys.get("accessKey"));
+        user.setSecretKey(keys.get("secretKey"));
+        try {
+           i = userMapper.updateById(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (i<0)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
+        return new ASKeyVO(keys.get("accessKey"), keys.get("secretKey"));
+    }
+
+
     public void checkMailbox(String email,HttpSession session) {
         String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         // 编译正则表达式
@@ -434,10 +503,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userVO;
     }
 
-    public User getASKeyUser() {
+    private User getASKeyUser() {
         /*
          *  生成accessKey 和 secretKey
          * */
+        Map<String, String> keys = generateAccessAndSecretKeys();
+        // 创建用户
+        User user = new User();
+        user.setAccessKey(keys.get("accessKey"));
+        user.setSecretKey(keys.get("secretKey"));
+        return user;
+    }
+
+    private Map<String, String> generateAccessAndSecretKeys() {
+        Map<String, String> resultMap = new HashMap<>();
         // 获取当前时间戳
         long timestamp = Instant.now().toEpochMilli();
         // 生成6位随机数
@@ -460,13 +539,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             e.printStackTrace();
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密钥生成失败");
         }
-
-        // 创建用户
-        User user = new User();
-        user.setAccessKey(accessKey);
-        user.setSecretKey(secretKey);
-        return user;
+        // 将结果放入map中
+        resultMap.put("accessKey", accessKey);
+        resultMap.put("secretKey", secretKey);
+        return resultMap;
     }
+
 
 }
 
