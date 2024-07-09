@@ -17,7 +17,7 @@ logging:
     org:
       springframework:
         cloud:
-          gateway: trace
+          gateway: info
 server:
   port: 8082
 

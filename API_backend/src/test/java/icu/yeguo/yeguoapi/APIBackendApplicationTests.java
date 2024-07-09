@@ -6,7 +6,9 @@ import cn.hutool.crypto.digest.HmacAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import cn.hutool.http.HttpRequest;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
+import icu.yeguo.yeguoapisdk.client.YGAPIClient;
 import org.junit.jupiter.api.Test;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -23,6 +25,30 @@ import java.util.Properties;
 
 //@SpringBootTest
 class APIBackendApplicationTests {
+    @Test
+    void interface1() {
+        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
+        String ipAddress = ygapiClient.getIpAddress("111.56.36.134");
+        System.out.println(ipAddress);
+    }
+    @Test
+    void interface2() {
+        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
+        String result = ygapiClient.getCityWeather("洛阳");
+        System.out.println(result);
+    }
+    @Test
+    void interface3() {
+        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
+        String result = ygapiClient.getPhoneLocation("17337904072");
+        System.out.println(result);
+    }
+    @Test
+    void interface4() {
+        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
+        String result = ygapiClient.getSiteIcp("bilibili.com");
+        System.out.println(result);
+    }
 
     @Test
     void generateSignature() {
@@ -42,7 +68,7 @@ class APIBackendApplicationTests {
         //可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("irp", "1419593965");
-        paramMap.put("test", "这是个 测试");
+        paramMap.put("test", "这是个测试");
         HttpRequest form = HttpRequest.post("http://localhost:8082/api/qq/info")
                 .form(paramMap);//表单内容
         System.out.println(form);
@@ -52,7 +78,7 @@ class APIBackendApplicationTests {
     void crypto() {
         // 加密
         String content = "test中文";
-        SymmetricCrypto sm4 = new SymmetricCrypto("SM4","野果_API平台".getBytes());
+        SymmetricCrypto sm4 = new SymmetricCrypto("SM4", "野果_API平台".getBytes());
 
         String encryptHex = sm4.encryptHex(content);
         String decryptStr = sm4.decryptStr(encryptHex, CharsetUtil.CHARSET_UTF_8);//test中文
@@ -85,7 +111,7 @@ class APIBackendApplicationTests {
             System.out.println("Access Key: " + md5AccessKey);
             System.out.println("Secret Key: " + md5SecretKey);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
@@ -107,45 +133,45 @@ class APIBackendApplicationTests {
 
     @Test
     void test() {
-                // 发件人邮箱和授权码
-                final String username = "1419593965@qq.com";
-                final String password = "ormjptjzlqmjhihj";
+        // 发件人邮箱和授权码
+        final String username = "1419593965@qq.com";
+        final String password = "ormjptjzlqmjhihj";
 
-                // 收件人邮箱
-                String to = "1419593965@qq.com";
+        // 收件人邮箱
+        String to = "1419593965@qq.com";
 
-                // 设置邮件服务器的属性
-                Properties props = new Properties();
-                props.put("mail.smtp.host", "smtp.qq.com"); // 指定SMTP服务器
-                props.put("mail.smtp.port", "465"); // QQ邮箱的SMTP端口
-                props.put("mail.smtp.auth", "true"); // 启用认证
-                props.put("mail.smtp.ssl.enable", "true"); // 使用SSL加密连接
-                props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                props.put("mail.smtp.socketFactory.fallback", "false");
-                props.put("mail.smtp.socketFactory.port", "465");
+        // 设置邮件服务器的属性
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.qq.com"); // 指定SMTP服务器
+        props.put("mail.smtp.port", "465"); // QQ邮箱的SMTP端口
+        props.put("mail.smtp.auth", "true"); // 启用认证
+        props.put("mail.smtp.ssl.enable", "true"); // 使用SSL加密连接
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.fallback", "false");
+        props.put("mail.smtp.socketFactory.port", "465");
 
-                // 创建会话对象
-                Session session = Session.getInstance(props, new Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-
-                try {
-                    // 创建邮件消息
-                    MimeMessage message = new MimeMessage(session);
-                    message.setFrom(new InternetAddress(username)); // 设置发件人
-                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(to)); // 设置收件人
-                    message.setSubject("23点52分通知邮件"); // 设置邮件主题
-                    message.setText("这是一份来自Java程序的通知邮件。"); // 设置邮件正文
-
-                    // 发送邮件
-                    Transport.send(message);
-                    System.out.println("邮件已成功发送！");
-                } catch (MessagingException mex) {
-                    mex.printStackTrace();
-                }
+        // 创建会话对象
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
             }
+        });
+
+        try {
+            // 创建邮件消息
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username)); // 设置发件人
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to)); // 设置收件人
+            message.setSubject("23点52分通知邮件"); // 设置邮件主题
+            message.setText("这是一份来自Java程序的通知邮件。"); // 设置邮件正文
+
+            // 发送邮件
+            Transport.send(message);
+            System.out.println("邮件已成功发送！");
+        } catch (MessagingException mex) {
+            System.out.println(mex.getMessage());
+        }
+    }
 
     @Test
     public void test1() {

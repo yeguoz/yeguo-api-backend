@@ -1,6 +1,7 @@
 package icu.yeguo.yeguoapi.utils;
 
 import com.sun.mail.util.MailSSLSocketFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
@@ -11,7 +12,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
+@Slf4j
 public class EmailUtil {
     public static String verifyCode;
     /**
@@ -49,18 +50,18 @@ public class EmailUtil {
             ts.sendMessage(message, message.getAllRecipients());
             ts.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return 1;
     }
 
     /**
-     * @Method: createSimpleMail
-     * @Description: 创建一封只包含文本的邮件
+     *  createSimpleMail
+     *  创建一封只包含文本的邮件
      */
     public static MimeMessage createSimpleMail(Session session, String receiveMail) throws MessagingException, UnsupportedEncodingException {
         String sender = "aidjajd@163.com";
-        String senderName = "yg-API 接口开放平台";
+        String senderName = "野果API接口开放平台";
         Random random = new Random();
 
         // 生成6位随机验证码
@@ -91,10 +92,6 @@ public class EmailUtil {
         message.setContent(htmlContent, "text/html;charset=UTF-8");
         // 返回创建好的邮件对象
         return message;
-    }
-
-    public static void main(String[] args) {
-        sendMail("1419593965@qq.com");
     }
 
 }

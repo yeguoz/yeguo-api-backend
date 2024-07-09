@@ -1,7 +1,6 @@
 package icu.yeguo.yeguoapi.constant;
 
 public interface SecretConstant {
-    String API_SECRET_KEY = "yeguo_api_secret_key";
     String PASSWORD_SECRET_KEY = "野果_API平台";
-    String SIGNATURE_KEY =  "yeguoapi";
+    String SIGNATURE_KEY =  "野果API";
 }

@@ -88,7 +88,7 @@ public class InterfaceInfoController {
     }
 
     @PostMapping("onlineInvoking")
-    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest, HttpServletRequest req,
+    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest,
                                          @RequestParam("accessKey") String accessKey,
                                          @RequestParam("signature") String signature) {
         /*

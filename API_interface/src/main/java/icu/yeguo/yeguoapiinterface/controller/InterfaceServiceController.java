@@ -9,7 +9,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/")
 public class InterfaceServiceController {
-    // 个人不能使用了
+    // 不能使用了
     @GetMapping("qq/info")
     public String getQQInfo(@RequestParam("qq") Long qq) {
         log.info("请求到==>/api/qq/info接口==qq:"+qq);
@@ -35,7 +35,7 @@ public class InterfaceServiceController {
     }
     // 获取手机归属地
     @GetMapping("common/teladress")
-    public String getPhoneLocation(@RequestParam("mobile") Long mobile) {
+    public String getPhoneLocation(@RequestParam("mobile") String mobile) {
         log.info("请求到==>/api/phone接口==mobile:"+mobile);
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("mobile", mobile);
