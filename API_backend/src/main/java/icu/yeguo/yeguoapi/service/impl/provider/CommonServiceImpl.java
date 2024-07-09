@@ -34,14 +34,7 @@ public class CommonServiceImpl implements CommonService {
         // 查询数据库
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getAccessKey, accessKey);
-        User user;
-        try {
-            user = userMapper.selectOne(lambdaQueryWrapper);
-        } catch (Exception e) {
-            log.error("getUser error", e);
-            throw new RuntimeException(e);
-        }
-        return user;
+        return userMapper.selectOne(lambdaQueryWrapper);
     }
 
     @Override
@@ -54,7 +47,7 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public void invokingCount(long interfaceInfoId) {
+    public Long invokingCount(long interfaceInfoId) {
         // 查询当前接口
         InterfaceInfo interfaceInfo = interfaceInfoMapper.selectById(interfaceInfoId);
         Long invokingCount = interfaceInfo.getInvokingCount();
@@ -62,7 +55,7 @@ public class CommonServiceImpl implements CommonService {
         InterfaceInfo updateInterfaceInfo = new InterfaceInfo();
         updateInterfaceInfo.setId(interfaceInfoId);
         updateInterfaceInfo.setInvokingCount(++invokingCount);
-        int rows = 0;
+        int rows;
         try {
             rows = interfaceInfoMapper.updateById(updateInterfaceInfo);
         } catch (Exception e) {
@@ -71,9 +64,19 @@ public class CommonServiceImpl implements CommonService {
         }
         if (rows > 0) {
             log.info("接口调用次数更新成功===="+interfaceInfo.getName());
-            return;
+            return invokingCount;
         }
         log.warn("接口调用次数更新失败");
+        return (long) -1;
+    }
+
+    @Override
+    public Long getInterfaceInfoId(String url) {
+        // 查询数据库中url url是interfaceInfo的接口地址
+        LambdaQueryWrapper<InterfaceInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(InterfaceInfo::getUrl, url);
+        InterfaceInfo interfaceInfo = interfaceInfoMapper.selectOne(lambdaQueryWrapper);
+        return interfaceInfo != null ? interfaceInfo.getId() : null;
     }
 
 

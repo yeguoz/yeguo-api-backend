@@ -17,7 +17,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
 import javax.mail.*;
 import java.util.HashMap;
 import java.util.Properties;
@@ -27,18 +26,19 @@ class APIBackendApplicationTests {
 
     @Test
     void generateSignature() {
-        String testStr = "OOxaZmStjtzIJhyfhp6JOqHs6s38m6ILbHOV6iZtllA=zKOYgQAE2CdCidvR74O3XEGQAz+k5B6dbLt8UGQHpqk=";
+        // 生成签名
+        String testStr = "7F48461FA9DB04287F8DF2C21CE39BB77DFF6FD641F8434ECCCEC5DA3BB05637";
         // 此处密钥如果有非ASCII字符
         byte[] key = SecretConstant.SIGNATURE_KEY.getBytes();
         HMac mac = new HMac(HmacAlgorithm.HmacMD5, key);
 
-        String macHex1 = mac.digestHex(testStr);
-        System.out.println(macHex1);
+        String macHex = mac.digestHex(testStr);
+        System.out.println(macHex);
     }
 
     @Test
     void httpReqTest() {
-
+        // http客户端测试
         //可以单独传入http参数，这样参数会自动做URL编码，拼接在URL中
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("irp", "1419593965");
@@ -50,6 +50,7 @@ class APIBackendApplicationTests {
 
     @Test
     void crypto() {
+        // 加密
         String content = "test中文";
         SymmetricCrypto sm4 = new SymmetricCrypto("SM4","野果_API平台".getBytes());
 
@@ -60,15 +61,16 @@ class APIBackendApplicationTests {
     }
 
     @Test
-    void contextLoads() {
+    public void generateKeys() {
+        // 生成ak sk
         // 获取当前时间戳
         long timestamp = Instant.now().toEpochMilli();
         // 生成6位随机数
         SecureRandom random = new SecureRandom();
-        int randomPart = random.nextInt(999999) + 1000000;
+        int randomPart = random.nextInt(899999) + 100000; // 生成100000到999999之间的随机数
         // 拼接时间戳和随机数
         String accessKeyInput = String.valueOf(timestamp) + randomPart;
-        String secretKeyInput = accessKeyInput + SecretConstant.PASSWORD_SECRET_KEY;  // 添加额外的字符串以增加复杂性
+        String secretKeyInput = accessKeyInput + SecretConstant.PASSWORD_SECRET_KEY;// 添加额外的字符串以增加复杂性
 
         // 使用SHA-256哈希函数生成密钥
         try {
@@ -76,14 +78,30 @@ class APIBackendApplicationTests {
             byte[] accessKeyBytes = md.digest(accessKeyInput.getBytes());
             byte[] secretKeyBytes = md.digest(secretKeyInput.getBytes());
 
-            // Base64编码密钥
-            String accessKey = Base64.getEncoder().encodeToString(accessKeyBytes);
-            String secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
+            // 将字节数组转换为十六进制字符串
+            String md5AccessKey = toMD5(accessKeyBytes);
+            String md5SecretKey = toMD5(secretKeyBytes);
 
-            System.out.println("Access Key: " + accessKey);
-            System.out.println("SecretConstant Key: " + secretKey);
+            System.out.println("Access Key: " + md5AccessKey);
+            System.out.println("Secret Key: " + md5SecretKey);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        }
+    }
+
+    private String toMD5(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(bytes);
+
+            // 转换字节数组为十六进制大写字符串表示
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 

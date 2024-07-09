@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -87,18 +88,18 @@ public class InterfaceInfoController {
     }
 
     @PostMapping("onlineInvoking")
-    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest, HttpServletRequest req) {
+    public Result<String> onlineInvoking(@RequestBody InvokingRequest invokingRequest, HttpServletRequest req,
+                                         @RequestParam("accessKey") String accessKey,
+                                         @RequestParam("signature") String signature) {
         /*
          * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
          * */
-        String interfaceInfoId = req.getHeader("X-InterfaceInfoId");
-        String signature = req.getHeader("X-Signature");
-        String accessKey = req.getHeader("X-AccessKey");
-        log.info("invokingRequest:"+invokingRequest);
-        log.info("irp:"+Arrays.toString(invokingRequest.getIrp()));
-        log.info("interfaceInfoId:"+interfaceInfoId);
-        log.info("accessKey:"+accessKey);
-        log.info("signature:"+signature);
+        log.info("invokingRequest:" + invokingRequest);
+        log.info("irp:" + Arrays.toString(invokingRequest.getIrp()));
+
+        log.info("accessKey:" + accessKey);
+        log.info("signature:" + signature);
+
         InvokingRequestParams[] irp = invokingRequest.getIrp();
         String result = null;
         // GET 请求
@@ -107,12 +108,12 @@ public class InterfaceInfoController {
             for (InvokingRequestParams item : irp) {
                 paramMap.put(item.getName(), item.getValue());
             }
+            // 请求中带的请求参数
+            paramMap.put("accessKey", accessKey);
+            paramMap.put("signature", signature);
             result = HttpRequest.get(invokingRequest.getUrl())
-                    .header("X-InterfaceInfoId",interfaceInfoId)
-                    .header("X-Signature", signature)
-                    .header("X-AccessKey",accessKey)//头信息，多个头信息多次调用此方法即可
                     .form(paramMap)//表单内容
-                    .timeout(6*60*60*1000)//超时，毫秒
+                    .timeout(6 * 60 * 60 * 1000)//超时，毫秒
                     .execute().body();
         }
 

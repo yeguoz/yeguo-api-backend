@@ -516,33 +516,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     private Map<String, String> generateAccessAndSecretKeys() {
+//        Map<String, String> resultMap = new HashMap<>();
+//        // 获取当前时间戳
+//        long timestamp = Instant.now().toEpochMilli();
+//        // 生成6位随机数
+//        SecureRandom random = new SecureRandom();
+//        int randomPart = random.nextInt(999999) + 1000000;
+//        // 拼接时间戳和随机数
+//        String accessKeyInput = String.valueOf(timestamp) + randomPart;
+//        String secretKeyInput = accessKeyInput + SecretConstant.API_SECRET_KEY;  // 添加额外的字符串以增加复杂性
+//        String accessKey;
+//        String secretKey;
+//        // 使用SHA-256哈希函数生成密钥
+//        try {
+//            MessageDigest md = MessageDigest.getInstance("SHA-256");
+//            byte[] accessKeyBytes = md.digest(accessKeyInput.getBytes());
+//            byte[] secretKeyBytes = md.digest(secretKeyInput.getBytes());
+//            // Base64编码密钥
+//            accessKey = Base64.getEncoder().encodeToString(accessKeyBytes);
+//            secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密钥生成失败");
+//        }
+//        // 将结果放入map中
+//        resultMap.put("accessKey", accessKey);
+//        resultMap.put("secretKey", secretKey);
         Map<String, String> resultMap = new HashMap<>();
         // 获取当前时间戳
         long timestamp = Instant.now().toEpochMilli();
         // 生成6位随机数
         SecureRandom random = new SecureRandom();
-        int randomPart = random.nextInt(999999) + 1000000;
+        int randomPart = random.nextInt(899999) + 100000; // 生成100000到999999之间的随机数
         // 拼接时间戳和随机数
         String accessKeyInput = String.valueOf(timestamp) + randomPart;
-        String secretKeyInput = accessKeyInput + SecretConstant.API_SECRET_KEY;  // 添加额外的字符串以增加复杂性
-        String accessKey;
-        String secretKey;
+        String secretKeyInput = accessKeyInput + SecretConstant.PASSWORD_SECRET_KEY;// 添加额外的字符串以增加复杂性
         // 使用SHA-256哈希函数生成密钥
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] accessKeyBytes = md.digest(accessKeyInput.getBytes());
             byte[] secretKeyBytes = md.digest(secretKeyInput.getBytes());
-            // Base64编码密钥
-            accessKey = Base64.getEncoder().encodeToString(accessKeyBytes);
-            secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
+            // 将字节数组转换为十六进制字符串
+            String md5AccessKey = toMD5(accessKeyBytes);
+            String md5SecretKey = toMD5(secretKeyBytes);
+            resultMap.put("accessKey", md5AccessKey);
+            resultMap.put("secretKey", md5SecretKey);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密钥生成失败");
         }
-        // 将结果放入map中
-        resultMap.put("accessKey", accessKey);
-        resultMap.put("secretKey", secretKey);
         return resultMap;
+    }
+
+    private String toMD5(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(bytes);
+
+            // 转换字节数组为十六进制大写字符串表示
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

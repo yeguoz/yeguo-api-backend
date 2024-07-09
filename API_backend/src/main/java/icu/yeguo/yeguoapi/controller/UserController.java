@@ -104,7 +104,6 @@ public class UserController {
         long expirationTime = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后
         session.setAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME, expirationTime);
 
-        System.out.println(EmailUtil.verifyCode);
         if (result != 1)
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "发送失败");
 
@@ -210,6 +209,7 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    // 更新个人信息
     @PutMapping("personInfoUpdate")
     public Result<Integer> personInfoUpdate(@RequestBody UserPersonUpdateParams userPersonUpdateParams, HttpServletRequest req) {
         // 更新成功返回值为 1
@@ -220,6 +220,7 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    // 更新个人密钥
     @PutMapping("{id}")
     public Result<ASKeyVO> personKeysUpdate(@PathVariable("id") Long id) {
         ASKeyVO result = userServiceImpl.upASKey(id);
