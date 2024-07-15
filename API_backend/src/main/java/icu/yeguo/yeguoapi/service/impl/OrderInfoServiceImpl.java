@@ -26,7 +26,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public List<OrderInfoVO> getAllOrders(Long userId) {
-        List<OrderInfoVO> orderInfoVOList = new ArrayList<>();
+        List<OrderInfoVO> orderInfoVOList;
         try {
             LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(OrderInfo::getUserId, userId);
