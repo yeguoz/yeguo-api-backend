@@ -20,7 +20,7 @@
             <result property="userRole" column="user_role" jdbcType="TINYINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+            <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -29,6 +29,6 @@
         phone,email,gold_coin,
         access_key,secret_key,user_status,
         user_role,create_time,update_time,
-        is_delete
+        is_deleted
     </sql>
 </mapper>

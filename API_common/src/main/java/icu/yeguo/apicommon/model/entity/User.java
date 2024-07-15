@@ -108,7 +108,7 @@ public class User implements Serializable {
      * 逻辑删除 0-未删除 1-删除
      */
     @TableLogic
-    private Integer isDelete;
+    private Integer isDeleted;
 
     @Serial
     @TableField(exist = false)

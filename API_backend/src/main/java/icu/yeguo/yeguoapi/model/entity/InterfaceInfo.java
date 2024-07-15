@@ -2,6 +2,7 @@ package icu.yeguo.yeguoapi.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -131,8 +132,9 @@ public class InterfaceInfo implements Serializable {
      * 逻辑删除 0-正常 1 删除
      */
     @TableLogic
-    private Integer isDelete;
+    private Integer isDeleted;
 
+    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
