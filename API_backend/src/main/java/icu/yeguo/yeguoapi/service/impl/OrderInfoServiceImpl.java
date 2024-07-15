@@ -25,7 +25,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderInfoMapper orderInfoMapper;
 
     @Override
-    public List<OrderInfoVO> getAllOrders(Long userId) {
+    public List<OrderInfoVO> getUserAllOrders(Long userId) {
         List<OrderInfoVO> orderInfoVOList;
         try {
             LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -47,6 +47,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw new RuntimeException(e);
         }
         return orderInfoVOList;
+    }
+
+    @Override
+    public List<OrderInfo> getAllOrders() {
+        List<OrderInfo> orderInfoList;
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderInfoList = orderInfoMapper.selectList(lambdaQueryWrapper);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        return orderInfoList;
     }
 }
 
