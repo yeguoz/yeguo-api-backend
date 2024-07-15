@@ -22,7 +22,7 @@ public class GlobalException {
 
     @ExceptionHandler(RuntimeException.class)
     public <T> Result<T> runtimeExceptionHandler(RuntimeException e) {
-        log.error("运行时异常-->{}:{}",e.getClass(),e.getMessage());
+        log.error("运行时异常-->{}:{}:{}",e.getClass(),e.getMessage(),e.getStackTrace());
         return ResultUtils.error(e.getMessage());
     }
 }

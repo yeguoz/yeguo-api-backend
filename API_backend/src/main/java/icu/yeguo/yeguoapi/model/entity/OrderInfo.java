@@ -10,11 +10,11 @@ import lombok.Data;
 
 /**
  * 
- * @TableName order
+ * @TableName order_info
  */
-@TableName(value ="order")
+@TableName(value ="order_info")
 @Data
-public class Order implements Serializable {
+public class OrderInfo implements Serializable {
     /**
      * 自增长id
      */

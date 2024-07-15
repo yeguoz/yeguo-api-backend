@@ -516,32 +516,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     private Map<String, String> generateAccessAndSecretKeys() {
-//        Map<String, String> resultMap = new HashMap<>();
-//        // 获取当前时间戳
-//        long timestamp = Instant.now().toEpochMilli();
-//        // 生成6位随机数
-//        SecureRandom random = new SecureRandom();
-//        int randomPart = random.nextInt(999999) + 1000000;
-//        // 拼接时间戳和随机数
-//        String accessKeyInput = String.valueOf(timestamp) + randomPart;
-//        String secretKeyInput = accessKeyInput + SecretConstant.API_SECRET_KEY;  // 添加额外的字符串以增加复杂性
-//        String accessKey;
-//        String secretKey;
-//        // 使用SHA-256哈希函数生成密钥
-//        try {
-//            MessageDigest md = MessageDigest.getInstance("SHA-256");
-//            byte[] accessKeyBytes = md.digest(accessKeyInput.getBytes());
-//            byte[] secretKeyBytes = md.digest(secretKeyInput.getBytes());
-//            // Base64编码密钥
-//            accessKey = Base64.getEncoder().encodeToString(accessKeyBytes);
-//            secretKey = Base64.getEncoder().encodeToString(secretKeyBytes);
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密钥生成失败");
-//        }
-//        // 将结果放入map中
-//        resultMap.put("accessKey", accessKey);
-//        resultMap.put("secretKey", secretKey);
         Map<String, String> resultMap = new HashMap<>();
         // 获取当前时间戳
         long timestamp = Instant.now().toEpochMilli();

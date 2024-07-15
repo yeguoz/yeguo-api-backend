@@ -28,10 +28,10 @@ import static icu.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 public class InterfaceInfoController {
 
     @Autowired
-    InterfaceInfoService interfaceInfoServiceImpl;
+    private InterfaceInfoService interfaceInfoServiceImpl;
 
     @Autowired
-    YGAPIClient ygapiClient;
+    private YGAPIClient ygapiClient;
 
     /*
      *  注册

@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="icu.yeguo.yeguoapi.mapper.OrderMapper">
+<mapper namespace="icu.yeguo.yeguoapi.mapper.OrderInfoMapper">
 
-    <resultMap id="BaseResultMap" type="icu.yeguo.yeguoapi.model.entity.Order">
+    <resultMap id="BaseResultMap" type="icu.yeguo.yeguoapi.model.entity.OrderInfo">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
             <result property="userId" column="user_id" jdbcType="BIGINT"/>

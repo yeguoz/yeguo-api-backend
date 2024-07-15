@@ -23,6 +23,4 @@ public class UserVO implements Serializable {
     private Integer userStatus;
     private Integer userRole;
     private Date createTime;
-
-
 }
