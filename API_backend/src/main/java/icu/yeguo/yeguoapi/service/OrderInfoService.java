@@ -13,5 +13,9 @@ import java.util.List;
 */
 public interface OrderInfoService extends IService<OrderInfo> {
 
-    List<OrderInfoVO> getAllOrders(Long userId);
+    List<OrderInfoVO> getUserAllOrders(Long userId);
+
+    List<OrderInfo> getAllOrders();
+
+    Integer cancelOrder(String orderId);
 }

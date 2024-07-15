@@ -2,6 +2,8 @@ package icu.yeguo.yeguoapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import icu.yeguo.yeguoapi.common.ResponseCode;
+import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
 import icu.yeguo.yeguoapi.model.vo.OrderInfoVO;
 import icu.yeguo.yeguoapi.service.OrderInfoService;
@@ -25,7 +27,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderInfoMapper orderInfoMapper;
 
     @Override
-    public List<OrderInfoVO> getAllOrders(Long userId) {
+    public List<OrderInfoVO> getUserAllOrders(Long userId) {
         List<OrderInfoVO> orderInfoVOList;
         try {
             LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -47,6 +49,32 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw new RuntimeException(e);
         }
         return orderInfoVOList;
+    }
+
+    @Override
+    public List<OrderInfo> getAllOrders() {
+        List<OrderInfo> orderInfoList;
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderInfoList = orderInfoMapper.selectList(lambdaQueryWrapper);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        return orderInfoList;
+    }
+
+    @Override
+    public Integer cancelOrder(String orderId) {
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(OrderInfo::getOrderId, orderId);
+            OrderInfo orderInfo = orderInfoMapper.selectOne(lambdaQueryWrapper);
+            orderInfo.setPayStatus(1);
+            orderInfoMapper.updateById(orderInfo);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 1;
     }
 }
 
