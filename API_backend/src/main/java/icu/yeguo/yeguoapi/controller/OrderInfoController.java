@@ -39,7 +39,6 @@ public class OrderInfoController {
         return ResultUtils.success(list);
     }
 
-
     // 用户取消订单
     @PutMapping("cancel/{orderId}")
     public Result<Integer> cancelOrder(@PathVariable("orderId") String orderId) {
