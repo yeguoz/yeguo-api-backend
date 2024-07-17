@@ -6,8 +6,11 @@ import cn.hutool.crypto.digest.HmacAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import cn.hutool.http.HttpRequest;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
+import icu.yeguo.yeguoapi.mapper.OrderInfoMapper;
 import icu.yeguo.yeguoapisdk.client.YGAPIClient;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -18,31 +21,53 @@ import javax.mail.internet.MimeMessage;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import javax.mail.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 
-//@SpringBootTest
 class APIBackendApplicationTests {
+    @Test
+    void timeTest() {
+        // 获取当前时间的毫秒时间戳
+        long timestamp = System.currentTimeMillis();
+
+        // 创建SimpleDateFormat对象，并设置日期时间格式
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+
+        // 将毫秒时间戳转换为Date对象
+        Date date = new Date(timestamp);
+
+        // 使用SimpleDateFormat将Date对象格式化为字符串
+        String formattedDateTime = sdf.format(date);
+        System.out.println(timestamp);
+        // 输出格式化后的日期时间字符串
+        System.out.println(formattedDateTime);
+    }
+
     @Test
     void interface1() {
         YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
         String ipAddress = ygapiClient.getIpAddress("111.56.36.134");
         System.out.println(ipAddress);
     }
+
     @Test
     void interface2() {
         YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
         String result = ygapiClient.getCityWeather("洛阳");
         System.out.println(result);
     }
+
     @Test
     void interface3() {
         YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
         String result = ygapiClient.getPhoneLocation("17337904072");
         System.out.println(result);
     }
+
     @Test
     void interface4() {
         YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");

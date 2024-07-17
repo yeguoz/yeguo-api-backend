@@ -4,6 +4,7 @@ import icu.yeguo.yeguoapi.common.ResponseCode;
 import icu.yeguo.yeguoapi.common.Result;
 import icu.yeguo.yeguoapi.common.ResultUtils;
 import icu.yeguo.yeguoapi.exception.BusinessException;
+import icu.yeguo.yeguoapi.model.dto.orderInfo.CreateOrderInfoRequest;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
 import icu.yeguo.yeguoapi.model.vo.OrderInfoVO;
 import icu.yeguo.yeguoapi.service.OrderInfoService;
@@ -21,6 +22,13 @@ import java.util.List;
 public class OrderInfoController {
     @Autowired
     private OrderInfoService orderInfoService;
+
+    // 创建订单
+    @PostMapping("")
+    public Result<String> createOrderInfo(@RequestBody CreateOrderInfoRequest createOrderInfoRequest) {
+        String orderInfoId = orderInfoService.createOrderInfo(createOrderInfoRequest);
+        return orderInfoId != null ? ResultUtils.success(orderInfoId) : ResultUtils.error("创建订单失败");
+    }
 
     // 用户获取自己所有订单
     @GetMapping("{userId}/all")
@@ -41,7 +49,7 @@ public class OrderInfoController {
 
     // 用户取消订单
     @PutMapping("cancel/{orderId}")
-    public Result<Integer> cancelOrder(@PathVariable("orderId") String orderId) {
-        return orderInfoService.cancelOrder(orderId) == 1 ? ResultUtils.success(1) : ResultUtils.success(-1);
+    public Result<Integer> cancelOrderInfo(@PathVariable("orderId") String orderId) {
+        return orderInfoService.cancelOrderInfo(orderId) == 1 ? ResultUtils.success(1) : ResultUtils.error("取消订单失败");
     }
 }

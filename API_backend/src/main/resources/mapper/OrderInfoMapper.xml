@@ -11,6 +11,7 @@
             <result property="payType" column="pay_type" jdbcType="TINYINT"/>
             <result property="money" column="money" jdbcType="DECIMAL"/>
             <result property="payStatus" column="pay_status" jdbcType="TINYINT"/>
+            <result property="commodityContent" column="commodity_content" jdbcType="VARCHAR"/>
             <result property="isValid" column="is_valid" jdbcType="TINYINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
@@ -20,7 +21,7 @@
     <sql id="Base_Column_List">
         id,order_id,user_id,
         pay_type,money,pay_status,
-        is_valid,create_time,update_time,
-        id_deleted
+        commodity_content,is_valid,create_time,
+        update_time,id_deleted
     </sql>
 </mapper>

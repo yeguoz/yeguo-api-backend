@@ -1,5 +1,6 @@
 package icu.yeguo.yeguoapi.service;
 
+import icu.yeguo.yeguoapi.model.dto.orderInfo.CreateOrderInfoRequest;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import icu.yeguo.yeguoapi.model.vo.OrderInfoVO;
@@ -17,5 +18,8 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     List<OrderInfo> getAllOrders();
 
-    Integer cancelOrder(String orderId);
+    Integer cancelOrderInfo(String orderId);
+
+    String createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest);
+
 }
