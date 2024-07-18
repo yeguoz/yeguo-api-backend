@@ -2,31 +2,27 @@ package icu.yeguo.yeguoapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import icu.yeguo.yeguoapi.common.ResponseCode;
-import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.dto.orderInfo.CreateOrderInfoRequest;
+import icu.yeguo.yeguoapi.model.dto.orderInfo.OrderInfoQueryRequest;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
 import icu.yeguo.yeguoapi.model.vo.OrderInfoVO;
 import icu.yeguo.yeguoapi.service.OrderInfoService;
 import icu.yeguo.yeguoapi.mapper.OrderInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
-* @author Lenovo
-* @description 针对表【order_info】的数据库操作Service实现
-* @createDate 2024-07-15 17:02:51
-*/
+ * @author Lenovo
+ * @description 针对表【order_info】的数据库操作Service实现
+ * @createDate 2024-07-15 17:02:51
+ */
 @Service
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo>
-    implements OrderInfoService{
+        implements OrderInfoService {
     @Autowired
     private OrderInfoMapper orderInfoMapper;
 
@@ -38,14 +34,16 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             lambdaQueryWrapper.eq(OrderInfo::getUserId, userId);
             List<OrderInfo> orders = orderInfoMapper.selectList(lambdaQueryWrapper);
 
-            orderInfoVOList = orders.stream().map(order -> {
+            orderInfoVOList = orders.stream().map(orderInfo -> {
                 OrderInfoVO orderVO = new OrderInfoVO();
-                orderVO.setOrderId(order.getOrderId());
-                orderVO.setUserId(order.getUserId());
-                orderVO.setPayType(order.getPayType());
-                orderVO.setMoney(order.getMoney());
-                orderVO.setPayStatus(order.getPayStatus());
-                orderVO.setCreateTime(order.getCreateTime());
+                orderVO.setOrderId(orderInfo.getOrderId());
+                orderVO.setUserId(orderInfo.getUserId());
+                orderVO.setPayType(orderInfo.getPayType());
+                orderVO.setMoney(orderInfo.getMoney());
+                orderVO.setPayStatus(orderInfo.getPayStatus());
+                orderVO.setCommodityContent(orderInfo.getCommodityContent());
+                orderVO.setCreateTime(orderInfo.getCreateTime());
+                orderVO.setUpdateTime(orderInfo.getUpdateTime());
                 return orderVO;
             }).collect(Collectors.toList());
 
@@ -56,25 +54,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
-    public List<OrderInfo> getAllOrders() {
-        List<OrderInfo> orderInfoList;
-        try {
-            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            orderInfoList = orderInfoMapper.selectList(lambdaQueryWrapper);
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-        return orderInfoList;
-    }
-
-    @Override
     public Integer cancelOrderInfo(String orderId) {
         try {
             LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(OrderInfo::getOrderId, orderId);
             OrderInfo orderInfo = orderInfoMapper.selectOne(lambdaQueryWrapper);
             if (orderInfo.getPayStatus() == 1) {
-                return -1;
+                return 2;
             }
             orderInfo.setPayStatus(1);
             orderInfoMapper.updateById(orderInfo);
@@ -86,9 +72,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public String createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest) {
-        // userId 支付金额 payment支付金额 支付方式payingMode 传过来
-        // 生成orderId，生成规则
-        // 设置这四个值，插入
         OrderInfo orderInfo = new OrderInfo();
         try {
             orderInfo.setUserId(createOrderInfoRequest.getUserId());
@@ -98,12 +81,54 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             System.out.println(createOrderInfoRequest.getCommodityContent());
             orderInfoMapper.insert(orderInfo);
             // 设置orderId
-            orderInfo.setOrderId(getFormattedDateTime()+orderInfo.getId());
+            orderInfo.setOrderId(getFormattedDateTime() + orderInfo.getId());
             orderInfoMapper.updateById(orderInfo);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return orderInfo.getOrderId();
+    }
+
+    @Override
+    public Integer deleteOrderInfo(String orderId) {
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(OrderInfo::getOrderId, orderId);
+            orderInfoMapper.delete(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 1;
+    }
+
+    @Override
+    public List<OrderInfo> selectAll() {
+        List<OrderInfo> orderInfoList;
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderInfoList = orderInfoMapper.selectList(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return orderInfoList;
+    }
+
+    @Override
+    public List<OrderInfo> dynamicQuery(OrderInfoQueryRequest orderInfoQueryRequest) {
+        LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(orderInfoQueryRequest.getOrderId() != null, OrderInfo::getOrderId, orderInfoQueryRequest.getOrderId())
+                .eq(orderInfoQueryRequest.getUserId() != null, OrderInfo::getUserId, orderInfoQueryRequest.getUserId())
+                .eq(orderInfoQueryRequest.getPayType() != null, OrderInfo::getPayType, orderInfoQueryRequest.getPayType())
+                .eq(orderInfoQueryRequest.getMoney() != null, OrderInfo::getMoney, orderInfoQueryRequest.getMoney())
+                .eq(orderInfoQueryRequest.getPayStatus() != null, OrderInfo::getPayStatus, orderInfoQueryRequest.getPayStatus());
+        List<OrderInfo> orderInfoList;
+        try {
+            orderInfoList = orderInfoMapper.selectList(lambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return orderInfoList;
     }
 
     private String getFormattedDateTime() {

@@ -16,5 +16,7 @@ public class OrderInfoVO implements Serializable {
     private Integer payType;
     private BigDecimal money;
     private Integer payStatus;
+    private String commodityContent;
     private Date createTime;
+    private Date updateTime;
 }
