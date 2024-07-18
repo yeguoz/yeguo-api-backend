@@ -178,25 +178,18 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
                 .eq(interfaceInfoQueryRequest.getInvokingCount() != null, InterfaceInfo::getInvokingCount, interfaceInfoQueryRequest.getInvokingCount())
                 .eq(interfaceInfoQueryRequest.getRequiredGoldCoins() != null, InterfaceInfo::getRequiredGoldCoins, interfaceInfoQueryRequest.getRequiredGoldCoins());
         ArrayList<InterfaceInfo> interfaceInfoList;
+        ArrayList<InterfaceInfoVO> result = new ArrayList<>();
         // 防止出现操作数据库错误
         try {
             interfaceInfoList = (ArrayList<InterfaceInfo>) interfaceInfoMapper.selectList(lambdaQueryWrapper);
+            for (InterfaceInfo interfaceInfo : interfaceInfoList) {
+                InterfaceInfoVO interfaceInfoVO = getInterfaceInfoVO(interfaceInfo);
+                result.add(interfaceInfoVO);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        if (interfaceInfoList == null || interfaceInfoList.isEmpty()) {
-            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, interfaceInfoList == null ? "查询失败，请检查代码" : "查询为空");
-        }
-
-        // 对每个接口信息进行处理，返回安全接口信息
-        ArrayList<InterfaceInfoVO> result = new ArrayList<>();
-        for (InterfaceInfo interfaceInfo : interfaceInfoList) {
-            InterfaceInfoVO interfaceInfoVO = getInterfaceInfoVO(interfaceInfo);
-            result.add(interfaceInfoVO);
-        }
         return result;
-
     }
 
 

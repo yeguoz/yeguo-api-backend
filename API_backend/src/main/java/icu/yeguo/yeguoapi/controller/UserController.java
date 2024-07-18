@@ -187,7 +187,7 @@ public class UserController {
      * 删除用户
      * */
     @DeleteMapping("{id}")
-    public Result<Integer> removeById(@PathVariable Long id, HttpServletRequest req) {
+    public Result<Integer> removeById(@PathVariable("id") Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
         }
@@ -215,7 +215,7 @@ public class UserController {
         // 更新成功返回值为 1
         int result = userServiceImpl.upPersonInfo(userPersonUpdateParams);
         if (result != 1) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR,"更新失败");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
         }
         return ResultUtils.success(result);
     }

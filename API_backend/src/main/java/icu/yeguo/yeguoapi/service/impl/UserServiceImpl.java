@@ -301,21 +301,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 .eq(userQueryRequest.getUserStatus() != null, User::getUserStatus, userQueryRequest.getUserStatus())
                 .eq(userQueryRequest.getUserRole() != null, User::getUserRole, userQueryRequest.getUserRole());
         ArrayList<User> userList;
+        ArrayList<UserVO> result = new ArrayList<>();
         try {
             userList = (ArrayList<User>) userMapper.selectList(lambdaQueryWrapper);
+            // 对每个用户脱敏 返回安全用户信息
+            for (User user : userList) {
+                UserVO userVO = getUserVO(user);
+                result.add(userVO);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-
-        if (userList == null || userList.isEmpty()) {
-            throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, userList == null ? "查询失败，请检查代码" : "查询为空");
-        }
-
-        // 对每个用户脱敏 返回安全用户信息
-        ArrayList<UserVO> result = new ArrayList<>();
-        for (User user : userList) {
-            UserVO userVO = getUserVO(user);
-            result.add(userVO);
         }
         return result;
     }
