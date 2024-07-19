@@ -2,6 +2,7 @@ package icu.yeguo.yeguoapi.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -57,12 +58,6 @@ public class OrderInfo implements Serializable {
     private String commodityContent;
 
     /**
-     * 支付是否过期（0 无效 1 有效 ）
-     */
-    @TableField(value = "is_valid")
-    private Integer isValid;
-
-    /**
      * 创建时间
      */
     @TableField(value = "create_time")
@@ -75,11 +70,18 @@ public class OrderInfo implements Serializable {
     private Date updateTime;
 
     /**
+     * 过期时间
+     */
+    @TableField(value = "expire_time")
+    private Date expireTime;
+
+    /**
      * 逻辑删除 （0 正常 1 删除）
      */
     @TableLogic
     private Integer idDeleted;
 
+    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

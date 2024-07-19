@@ -3,25 +3,36 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="icu.yeguo.yeguoapi.mapper.OrderInfoMapper">
-
     <resultMap id="BaseResultMap" type="icu.yeguo.yeguoapi.model.entity.OrderInfo">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
-            <result property="userId" column="user_id" jdbcType="BIGINT"/>
-            <result property="payType" column="pay_type" jdbcType="TINYINT"/>
-            <result property="money" column="money" jdbcType="DECIMAL"/>
-            <result property="payStatus" column="pay_status" jdbcType="TINYINT"/>
-            <result property="commodityContent" column="commodity_content" jdbcType="VARCHAR"/>
-            <result property="isValid" column="is_valid" jdbcType="TINYINT"/>
-            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="idDeleted" column="id_deleted" jdbcType="TINYINT"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="payType" column="pay_type" jdbcType="TINYINT"/>
+        <result property="money" column="money" jdbcType="DECIMAL"/>
+        <result property="payStatus" column="pay_status" jdbcType="TINYINT"/>
+        <result property="commodityContent" column="commodity_content" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="expireTime" column="expire_time" jdbcType="TIMESTAMP"/>
+        <result property="idDeleted" column="id_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,order_id,user_id,
         pay_type,money,pay_status,
-        commodity_content,is_valid,create_time,
-        update_time,id_deleted
+        commodity_content,create_time,update_time,
+        expire_time,id_deleted
     </sql>
+    <insert id="oderInfoInsert"  useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_info (user_id,
+                                pay_type,
+                                money,
+                                commodity_content,
+                                expire_time)
+        VALUES (#{userId},
+                #{payType},
+                #{money},
+                #{commodityContent},
+                NOW() + INTERVAL 300 SECOND)
+    </insert>
 </mapper>

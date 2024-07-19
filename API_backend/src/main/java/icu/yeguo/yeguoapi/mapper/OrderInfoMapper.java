@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity icu.yeguo.yeguoapi.model.entity.OrderInfo
 */
 public interface OrderInfoMapper extends BaseMapper<OrderInfo> {
+    int oderInfoInsert(OrderInfo orderInfo);
 }
 
 

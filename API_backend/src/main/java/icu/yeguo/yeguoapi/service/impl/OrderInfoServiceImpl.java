@@ -10,6 +10,7 @@ import icu.yeguo.yeguoapi.service.OrderInfoService;
 import icu.yeguo.yeguoapi.mapper.OrderInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -78,8 +79,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setPayType(createOrderInfoRequest.getPayType());
             orderInfo.setMoney(createOrderInfoRequest.getMoney());
             orderInfo.setCommodityContent(createOrderInfoRequest.getCommodityContent());
-            System.out.println(createOrderInfoRequest.getCommodityContent());
-            orderInfoMapper.insert(orderInfo);
+            orderInfoMapper.oderInfoInsert(orderInfo);
             // 设置orderId
             orderInfo.setOrderId(getFormattedDateTime() + orderInfo.getId());
             orderInfoMapper.updateById(orderInfo);
