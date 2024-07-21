@@ -37,7 +37,6 @@ public class OrderInfoController {
     @GetMapping("{userId}/dynamicQuery")
     public Result<List<OrderInfoVO>> getUserAllOrderInfos(@PathVariable("userId") Long userId, OrderInfoQueryRequest
             orderInfoQueryRequest) {
-        System.out.println("orderInfoQueryRequest"+orderInfoQueryRequest);
         List<OrderInfoVO> orderInfoList;
         // hutool BeanUtil 属性都为空
         if (BeanUtil.isEmpty(orderInfoQueryRequest)) {
