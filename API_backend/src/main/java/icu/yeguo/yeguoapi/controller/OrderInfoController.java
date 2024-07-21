@@ -14,7 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+
 import static icu.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
 @Slf4j
@@ -32,10 +34,18 @@ public class OrderInfoController {
     }
 
     // 用户获取自己所有订单
-    @GetMapping("{userId}/all")
-    public Result<List<OrderInfoVO>> getUserAllOrderInfos(@PathVariable("userId") Long userId) {
-        List<OrderInfoVO> list = orderInfoServiceImpl.getUserAllOrders(userId);
-        return ResultUtils.success(list);
+    @GetMapping("{userId}/dynamicQuery")
+    public Result<List<OrderInfoVO>> getUserAllOrderInfos(@PathVariable("userId") Long userId, OrderInfoQueryRequest
+            orderInfoQueryRequest) {
+        System.out.println("orderInfoQueryRequest"+orderInfoQueryRequest);
+        List<OrderInfoVO> orderInfoList;
+        // hutool BeanUtil 属性都为空
+        if (BeanUtil.isEmpty(orderInfoQueryRequest)) {
+            orderInfoList = orderInfoServiceImpl.getUserAllOrderInfos(userId);
+        } else {
+            orderInfoList = orderInfoServiceImpl.dynamicQueryUserOrderInfos(userId,orderInfoQueryRequest);
+        }
+        return ResultUtils.success(orderInfoList);
     }
 
     @GetMapping("dynamicQuery")

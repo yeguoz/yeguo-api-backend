@@ -15,7 +15,7 @@ import java.util.List;
 */
 public interface OrderInfoService extends IService<OrderInfo> {
 
-    List<OrderInfoVO> getUserAllOrders(Long userId);
+    List<OrderInfoVO> getUserAllOrderInfos(Long userId);
 
     Integer cancelOrderInfo(String orderId);
 
@@ -26,4 +26,6 @@ public interface OrderInfoService extends IService<OrderInfo> {
     List<OrderInfo> selectAll();
 
     List<OrderInfo> dynamicQuery(OrderInfoQueryRequest orderInfoQueryRequest);
+
+    List<OrderInfoVO> dynamicQueryUserOrderInfos(Long userId,OrderInfoQueryRequest orderInfoQueryRequest);
 }

@@ -29,14 +29,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderInfoMapper orderInfoMapper;
 
     @Override
-    public List<OrderInfoVO> getUserAllOrders(Long userId) {
+    public List<OrderInfoVO> getUserAllOrderInfos(Long userId) {
         List<OrderInfoVO> orderInfoVOList;
         try {
             LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(OrderInfo::getUserId, userId);
-            List<OrderInfo> orders = orderInfoMapper.selectList(lambdaQueryWrapper);
+            List<OrderInfo> orderInfos = orderInfoMapper.selectList(lambdaQueryWrapper);
 
-            orderInfoVOList = orders.stream().map(this::getOrderInfoVO
+            orderInfoVOList = orderInfos.stream().map(this::getOrderInfoVO
             ).collect(Collectors.toList());
 
         } catch (Exception e) {
@@ -61,6 +61,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         return 1;
     }
+
     @Transactional
     @Override
     public OrderInfoVO createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest) {
@@ -82,20 +83,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw new RuntimeException(e);
         }
         return getOrderInfoVO(orderInfo);
-    }
-
-    private OrderInfoVO getOrderInfoVO(OrderInfo orderInfo) {
-        OrderInfoVO orderInfoVO = new OrderInfoVO();
-        orderInfoVO.setOrderId(orderInfo.getOrderId());
-        orderInfoVO.setUserId(orderInfo.getUserId());
-        orderInfoVO.setPayType(orderInfo.getPayType());
-        orderInfoVO.setMoney(orderInfo.getMoney());
-        orderInfoVO.setPayStatus(orderInfo.getPayStatus());
-        orderInfoVO.setCommodityContent(orderInfo.getCommodityContent());
-        orderInfoVO.setCreateTime(orderInfo.getCreateTime());
-        orderInfoVO.setUpdateTime(orderInfo.getUpdateTime());
-        orderInfoVO.setExpireTime(orderInfo.getExpireTime());
-        return orderInfoVO;
     }
 
     @Override
@@ -140,6 +127,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return orderInfoList;
     }
 
+    @Override
+    public List<OrderInfoVO> dynamicQueryUserOrderInfos(Long userId,OrderInfoQueryRequest orderInfoQueryRequest) {
+        LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(OrderInfo::getUserId, userId)
+                .eq(orderInfoQueryRequest.getOrderId() != null, OrderInfo::getOrderId, orderInfoQueryRequest.getOrderId())
+                .eq(orderInfoQueryRequest.getPayType() != null, OrderInfo::getPayType, orderInfoQueryRequest.getPayType())
+                .eq(orderInfoQueryRequest.getMoney() != null, OrderInfo::getMoney, orderInfoQueryRequest.getMoney())
+                .eq(orderInfoQueryRequest.getPayStatus() != null, OrderInfo::getPayStatus, orderInfoQueryRequest.getPayStatus());
+        List<OrderInfoVO> orderInfoVOList;
+        try {
+            orderInfoVOList = orderInfoMapper.selectList(lambdaQueryWrapper).stream().map(this::getOrderInfoVO
+            ).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return orderInfoVOList;
+    }
+
     private String getFormattedDateTime() {
         // 创建SimpleDateFormat对象，并设置日期时间格式
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -147,6 +153,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Date date = new Date(System.currentTimeMillis());
         // 使用SimpleDateFormat将Date对象格式化为字符串
         return sdf.format(date);
+    }
+
+    private OrderInfoVO getOrderInfoVO(OrderInfo orderInfo) {
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        orderInfoVO.setOrderId(orderInfo.getOrderId());
+        orderInfoVO.setUserId(orderInfo.getUserId());
+        orderInfoVO.setPayType(orderInfo.getPayType());
+        orderInfoVO.setMoney(orderInfo.getMoney());
+        orderInfoVO.setPayStatus(orderInfo.getPayStatus());
+        orderInfoVO.setCommodityContent(orderInfo.getCommodityContent());
+        orderInfoVO.setCreateTime(orderInfo.getCreateTime());
+        orderInfoVO.setUpdateTime(orderInfo.getUpdateTime());
+        orderInfoVO.setExpireTime(orderInfo.getExpireTime());
+        return orderInfoVO;
     }
 }
 
