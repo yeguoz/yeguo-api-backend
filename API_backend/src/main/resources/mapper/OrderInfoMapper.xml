@@ -33,6 +33,6 @@
                 #{payType},
                 #{money},
                 #{commodityContent},
-                NOW() + INTERVAL 300 SECOND)
+                NOW() + INTERVAL 60 SECOND)
     </insert>
 </mapper>

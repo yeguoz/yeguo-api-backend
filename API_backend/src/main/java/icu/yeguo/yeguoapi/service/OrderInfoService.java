@@ -19,7 +19,7 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     Integer cancelOrderInfo(String orderId);
 
-    String createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest);
+    OrderInfoVO createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest);
 
     Integer deleteOrderInfo(String orderId);
 

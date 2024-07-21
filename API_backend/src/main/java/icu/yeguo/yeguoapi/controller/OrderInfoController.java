@@ -26,9 +26,9 @@ public class OrderInfoController {
 
     // 创建订单
     @PostMapping("")
-    public Result<String> createOrderInfo(@RequestBody CreateOrderInfoRequest createOrderInfoRequest) {
-        String orderInfoId = orderInfoServiceImpl.createOrderInfo(createOrderInfoRequest);
-        return orderInfoId != null ? ResultUtils.success(orderInfoId) : ResultUtils.error("创建订单失败");
+    public Result<OrderInfoVO> createOrderInfo(@RequestBody CreateOrderInfoRequest createOrderInfoRequest) {
+        OrderInfoVO orderInfoVO = orderInfoServiceImpl.createOrderInfo(createOrderInfoRequest);
+        return orderInfoVO != null ? ResultUtils.success(orderInfoVO) : ResultUtils.error("创建订单失败");
     }
 
     // 用户获取自己所有订单
@@ -38,7 +38,6 @@ public class OrderInfoController {
         return ResultUtils.success(list);
     }
 
-    //  该方法需要覆盖上面的
     @GetMapping("dynamicQuery")
     public Result<List<OrderInfo>> dynamicQuery(OrderInfoQueryRequest orderInfoQueryRequest, HttpServletRequest req) {
         List<OrderInfo> orderInfoList;
@@ -54,7 +53,7 @@ public class OrderInfoController {
         return ResultUtils.success(orderInfoList);
     }
 
-    // 用户取消订单
+    // 取消订单 使其失效
     @PutMapping("cancel/{orderId}")
     public Result<Integer> cancelOrderInfo(@PathVariable("orderId") String orderId) {
         Integer result = orderInfoServiceImpl.cancelOrderInfo(orderId);

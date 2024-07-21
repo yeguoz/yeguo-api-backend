@@ -10,6 +10,7 @@ import icu.yeguo.yeguoapi.service.OrderInfoService;
 import icu.yeguo.yeguoapi.mapper.OrderInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,18 +36,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             lambdaQueryWrapper.eq(OrderInfo::getUserId, userId);
             List<OrderInfo> orders = orderInfoMapper.selectList(lambdaQueryWrapper);
 
-            orderInfoVOList = orders.stream().map(orderInfo -> {
-                OrderInfoVO orderVO = new OrderInfoVO();
-                orderVO.setOrderId(orderInfo.getOrderId());
-                orderVO.setUserId(orderInfo.getUserId());
-                orderVO.setPayType(orderInfo.getPayType());
-                orderVO.setMoney(orderInfo.getMoney());
-                orderVO.setPayStatus(orderInfo.getPayStatus());
-                orderVO.setCommodityContent(orderInfo.getCommodityContent());
-                orderVO.setCreateTime(orderInfo.getCreateTime());
-                orderVO.setUpdateTime(orderInfo.getUpdateTime());
-                return orderVO;
-            }).collect(Collectors.toList());
+            orderInfoVOList = orders.stream().map(this::getOrderInfoVO
+            ).collect(Collectors.toList());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -70,23 +61,41 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         return 1;
     }
-
+    @Transactional
     @Override
-    public String createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest) {
+    public OrderInfoVO createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest) {
         OrderInfo orderInfo = new OrderInfo();
         try {
             orderInfo.setUserId(createOrderInfoRequest.getUserId());
             orderInfo.setPayType(createOrderInfoRequest.getPayType());
             orderInfo.setMoney(createOrderInfoRequest.getMoney());
             orderInfo.setCommodityContent(createOrderInfoRequest.getCommodityContent());
+            // 插入数据
             orderInfoMapper.oderInfoInsert(orderInfo);
             // 设置orderId
             orderInfo.setOrderId(getFormattedDateTime() + orderInfo.getId());
+            // 更新订单id
             orderInfoMapper.updateById(orderInfo);
+            // 查询订单
+            orderInfo = orderInfoMapper.selectById(orderInfo.getId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return orderInfo.getOrderId();
+        return getOrderInfoVO(orderInfo);
+    }
+
+    private OrderInfoVO getOrderInfoVO(OrderInfo orderInfo) {
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        orderInfoVO.setOrderId(orderInfo.getOrderId());
+        orderInfoVO.setUserId(orderInfo.getUserId());
+        orderInfoVO.setPayType(orderInfo.getPayType());
+        orderInfoVO.setMoney(orderInfo.getMoney());
+        orderInfoVO.setPayStatus(orderInfo.getPayStatus());
+        orderInfoVO.setCommodityContent(orderInfo.getCommodityContent());
+        orderInfoVO.setCreateTime(orderInfo.getCreateTime());
+        orderInfoVO.setUpdateTime(orderInfo.getUpdateTime());
+        orderInfoVO.setExpireTime(orderInfo.getExpireTime());
+        return orderInfoVO;
     }
 
     @Override

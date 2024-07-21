@@ -19,4 +19,5 @@ public class OrderInfoVO implements Serializable {
     private String commodityContent;
     private Date createTime;
     private Date updateTime;
+    private Date expireTime;
 }
