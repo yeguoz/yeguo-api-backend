@@ -76,7 +76,7 @@ public class EmailUtil {
         message.setFrom(new InternetAddress(EMAIL_SENDER, EMAIL_SENDER_NAME));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(receiveMail));
         message.setSubject("野果API积分购买审核通知");
-
+        String payType = orderInfoNotificationRequest.getPayType() == 0 ? "微信支付" : "支付宝支付";
         String htmlContent = "<html><body style=\"margin: 0;\">"
                 + "<header style=\"display: block; width: 100%; height: 20px; background-color: #a6559d; padding: 10px;line-height:20px;color:#fff\">"
                 + "野果API</header><div style=\"padding: 30px;\">"
@@ -84,7 +84,7 @@ public class EmailUtil {
                 + "<p>订单号：" + orderInfoNotificationRequest.getOrderId() + "</p>"
                 + "<p>用户ID：" + orderInfoNotificationRequest.getUserId() + "</p>"
                 + "<p>支付金额：" + orderInfoNotificationRequest.getMoney() + "</p>"
-                + "<p>支付方式：" + orderInfoNotificationRequest.getPayType() + "</p>"
+                + "<p>支付方式：" + payType + "</p>"
                 + "<p>商品内容：" + orderInfoNotificationRequest.getCommodityContent() + "</p>"
                 + "<p>请尽快审核！</p></div></body></html>";
 
