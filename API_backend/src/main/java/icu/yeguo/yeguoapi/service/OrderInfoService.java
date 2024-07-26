@@ -17,8 +17,6 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     List<OrderInfoVO> getUserAllOrderInfos(Long userId);
 
-    Integer cancelOrderInfo(String orderId);
-
     OrderInfoVO createOrderInfo(CreateOrderInfoRequest createOrderInfoRequest);
 
     Integer deleteOrderInfo(String orderId);
@@ -28,4 +26,6 @@ public interface OrderInfoService extends IService<OrderInfo> {
     List<OrderInfo> dynamicQuery(OrderInfoQueryRequest orderInfoQueryRequest);
 
     List<OrderInfoVO> dynamicQueryUserOrderInfos(Long userId,OrderInfoQueryRequest orderInfoQueryRequest);
+
+    Integer updateOrderInfoStatus(String orderId,Integer payStatus);
 }

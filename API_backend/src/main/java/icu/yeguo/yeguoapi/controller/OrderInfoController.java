@@ -6,10 +6,12 @@ import icu.yeguo.yeguoapi.common.Result;
 import icu.yeguo.yeguoapi.common.ResultUtils;
 import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.dto.orderInfo.CreateOrderInfoRequest;
+import icu.yeguo.yeguoapi.model.dto.orderInfo.OrderInfoNotificationRequest;
 import icu.yeguo.yeguoapi.model.dto.orderInfo.OrderInfoQueryRequest;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
 import icu.yeguo.yeguoapi.model.vo.OrderInfoVO;
 import icu.yeguo.yeguoapi.service.OrderInfoService;
+import icu.yeguo.yeguoapi.utils.EmailUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import static icu.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 @RestController
 @RequestMapping("/orderInfo")
 public class OrderInfoController {
+    private static final String EMAIL_SENDER = "aidjajd@163.com";
     @Autowired
     private OrderInfoService orderInfoServiceImpl;
 
@@ -30,7 +33,9 @@ public class OrderInfoController {
     @PostMapping("")
     public Result<OrderInfoVO> createOrderInfo(@RequestBody CreateOrderInfoRequest createOrderInfoRequest) {
         OrderInfoVO orderInfoVO = orderInfoServiceImpl.createOrderInfo(createOrderInfoRequest);
-        return orderInfoVO != null ? ResultUtils.success(orderInfoVO) : ResultUtils.error("创建订单失败");
+        if (orderInfoVO == null)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR);
+        return ResultUtils.success(orderInfoVO);
     }
 
     // 用户获取自己所有订单
@@ -42,7 +47,7 @@ public class OrderInfoController {
         if (BeanUtil.isEmpty(orderInfoQueryRequest)) {
             orderInfoList = orderInfoServiceImpl.getUserAllOrderInfos(userId);
         } else {
-            orderInfoList = orderInfoServiceImpl.dynamicQueryUserOrderInfos(userId,orderInfoQueryRequest);
+            orderInfoList = orderInfoServiceImpl.dynamicQueryUserOrderInfos(userId, orderInfoQueryRequest);
         }
         return ResultUtils.success(orderInfoList);
     }
@@ -50,9 +55,8 @@ public class OrderInfoController {
     @GetMapping("dynamicQuery")
     public Result<List<OrderInfo>> dynamicQuery(OrderInfoQueryRequest orderInfoQueryRequest, HttpServletRequest req) {
         List<OrderInfo> orderInfoList;
-        if (!isAdmin(req)) {
+        if (!isAdmin(req))
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户，无权限执行此操作");
-        }
         // hutool BeanUtil 属性都为空
         if (BeanUtil.isEmpty(orderInfoQueryRequest)) {
             orderInfoList = orderInfoServiceImpl.selectAll();
@@ -63,23 +67,31 @@ public class OrderInfoController {
     }
 
     // 取消订单 使其失效
-    @PutMapping("cancel/{orderId}")
-    public Result<Integer> cancelOrderInfo(@PathVariable("orderId") String orderId) {
-        Integer result = orderInfoServiceImpl.cancelOrderInfo(orderId);
-        if (orderInfoServiceImpl.cancelOrderInfo(orderId) == 2) {
-            return ResultUtils.success(result);
-        }
-        return result == 1 ?
-                ResultUtils.success(result) :
-                ResultUtils.error("取消订单失败");
+    @PutMapping("{orderId}/{payStatus}")
+    public Result<Integer> updateOrderInfoStatus(@PathVariable("orderId") String orderId,
+                                           @PathVariable("payStatus") Integer payStatus) {
+        Integer result = orderInfoServiceImpl.updateOrderInfoStatus(orderId,payStatus);
+        if (result != 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR);
+        return ResultUtils.success(result);
     }
 
     // 删除订单
     @DeleteMapping("{orderId}")
     public Result<Integer> deleteOrderInfo(@PathVariable("orderId") String orderId) {
         Integer result = orderInfoServiceImpl.deleteOrderInfo(orderId);
-        return result == 1 ?
-                ResultUtils.success(result) :
-                ResultUtils.error("删除订单失败");
+        if (result != 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR);
+        return ResultUtils.success(result);
+
     }
+
+    @PostMapping("notifyMail")
+    public Result<Integer> sendNotificationMail(@RequestBody OrderInfoNotificationRequest orderInfoNotificationRequest) {
+        Integer result = EmailUtil.sendMail(EMAIL_SENDER, orderInfoNotificationRequest);
+        if (result != 1)
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR);
+        return ResultUtils.success(1);
+    }
+
 }

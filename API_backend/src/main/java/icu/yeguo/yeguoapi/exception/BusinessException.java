@@ -20,6 +20,12 @@ public class BusinessException extends RuntimeException{
         this.description = description;
     }
 
+    public BusinessException(ResponseCode responseCode) {
+        super(responseCode.getMessage());
+        this.code = responseCode.getCode();
+        this.description = "";
+    }
+
     public BusinessException(ResponseCode responseCode, String description) {
         super(responseCode.getMessage());
         this.code = responseCode.getCode();

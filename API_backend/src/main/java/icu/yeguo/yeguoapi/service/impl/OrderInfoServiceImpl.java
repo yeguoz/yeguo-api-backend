@@ -2,6 +2,8 @@ package icu.yeguo.yeguoapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import icu.yeguo.yeguoapi.common.ResponseCode;
+import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.dto.orderInfo.CreateOrderInfoRequest;
 import icu.yeguo.yeguoapi.model.dto.orderInfo.OrderInfoQueryRequest;
 import icu.yeguo.yeguoapi.model.entity.OrderInfo;
@@ -43,23 +45,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw new RuntimeException(e);
         }
         return orderInfoVOList;
-    }
-
-    @Override
-    public Integer cancelOrderInfo(String orderId) {
-        try {
-            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(OrderInfo::getOrderId, orderId);
-            OrderInfo orderInfo = orderInfoMapper.selectOne(lambdaQueryWrapper);
-            if (orderInfo.getPayStatus() == 1) {
-                return 2;
-            }
-            orderInfo.setPayStatus(1);
-            orderInfoMapper.updateById(orderInfo);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return 1;
     }
 
     @Transactional
@@ -128,7 +113,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
-    public List<OrderInfoVO> dynamicQueryUserOrderInfos(Long userId,OrderInfoQueryRequest orderInfoQueryRequest) {
+    public List<OrderInfoVO> dynamicQueryUserOrderInfos(Long userId, OrderInfoQueryRequest orderInfoQueryRequest) {
         LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(OrderInfo::getUserId, userId)
@@ -144,6 +129,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw new RuntimeException(e);
         }
         return orderInfoVOList;
+    }
+
+    @Override
+    public Integer updateOrderInfoStatus(String orderId, Integer payStatus) {
+        try {
+            LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(OrderInfo::getOrderId, orderId);
+            OrderInfo orderInfo = orderInfoMapper.selectOne(lambdaQueryWrapper);
+            if (orderInfo == null) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "订单不存在");
+            }
+            orderInfo.setPayStatus(payStatus);
+            orderInfoMapper.updateById(orderInfo);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 1;
     }
 
     private String getFormattedDateTime() {
