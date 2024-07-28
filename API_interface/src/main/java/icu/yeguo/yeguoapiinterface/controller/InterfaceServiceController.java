@@ -108,7 +108,12 @@ public class InterfaceServiceController {
 
         // 删除临时文件
         if (tempFile.exists()) {
-            tempFile.delete();
+            boolean isDeleted = tempFile.delete();
+            if (isDeleted) {
+                log.info("File deleted successfully");
+            } else {
+                log.error("Failed to delete file");
+            }
         }
 
         return result;
