@@ -42,4 +42,6 @@ public interface UserService extends IService<User> {
     int upPersonInfo(UserPersonUpdateParams userPersonUpdateParams);
 
     ASKeyVO upASKey(Long id);
+
+    Integer recharge(Long userId, Long goldCoin);
 }

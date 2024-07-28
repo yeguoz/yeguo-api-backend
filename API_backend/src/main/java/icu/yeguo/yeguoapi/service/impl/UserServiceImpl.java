@@ -51,6 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 用户注册
+     *
      * @param userAccount
      * @param userPassword
      * @param checkPassword
@@ -117,6 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 用户登录
+     *
      * @param userAccount
      * @param userPassword
      * @param req
@@ -170,6 +172,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 按id查询用户
+     *
      * @param id
      * @return User
      */
@@ -188,6 +191,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 查询所有用户
+     *
      * @return ArrayList<UserVO>
      */
     @Override
@@ -214,6 +218,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 按id删除用户
+     *
      * @param id
      * @return int
      */
@@ -232,6 +237,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 按id修改用户信息
+     *
      * @param userUpdateRequest
      * @return int
      */
@@ -261,6 +267,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 获取当前用户信息
+     *
      * @param req
      * @return UserVO
      */
@@ -284,6 +291,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 按查询参数动态查询
+     *
      * @param userQueryRequest
      * @return ArrayList<UserVO>
      */
@@ -316,10 +324,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public long userEmailRegister(String email,String verifyCode,HttpServletRequest req) {
+    public long userEmailRegister(String email, String verifyCode, HttpServletRequest req) {
         HttpSession session = req.getSession();
         // 校验邮箱
-        checkMailbox(email,session);
+        checkMailbox(email, session);
         // 查询数据库，该邮箱未被使用
         // 邮箱不能重复
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -338,7 +346,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱已被使用");
         }
         // 校验验证码
-        checkVerificationCode(verifyCode,session);
+        checkVerificationCode(verifyCode, session);
         // 生成accessKey和secretKey
         User user = getASKeyUser();
         user.setEmail(email);
@@ -365,7 +373,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public UserVO userEmailLogin(String email, String verifyCode, HttpServletRequest req) {
         HttpSession session = req.getSession();
         // 校验邮箱格式
-        checkMailbox(email,session);
+        checkMailbox(email, session);
         // 邮箱是否存在数据库
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getEmail, email);
@@ -375,7 +383,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "该用户不存在");
         }
         // 校验验证码
-        checkVerificationCode(verifyCode,session);
+        checkVerificationCode(verifyCode, session);
         // 校验成功，返回UserVO对象
         UserVO userVO = getUserVO(user);
         // 设置登录态
@@ -441,17 +449,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setAccessKey(keys.get("accessKey"));
         user.setSecretKey(keys.get("secretKey"));
         try {
-           i = userMapper.updateById(user);
+            i = userMapper.updateById(user);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        if (i<0)
+        if (i < 0)
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
         return new ASKeyVO(keys.get("accessKey"), keys.get("secretKey"));
     }
 
+    @Override
+    public Integer recharge(Long userId, Long goldCoin) {
+        try {
+            User user = userMapper.selectById(userId);
+            if (user == null)
+                throw new BusinessException(ResponseCode.NOT_FOUND_ERROR, "用户不存在");
+            user.setGoldCoin(user.getGoldCoin() + goldCoin);
+            int i = userMapper.updateById(user);
+            if (i < 0)
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "失败");
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 1;
+    }
 
-    public void checkMailbox(String email,HttpSession session) {
+    public void checkMailbox(String email, HttpSession session) {
         String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         // 编译正则表达式
         Pattern pattern = Pattern.compile(regex);
@@ -460,24 +485,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!matcher.matches()) {
             session.removeAttribute(UserConstant.VERIFY_CODE);
             session.removeAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME);
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"邮箱格式错误！");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱格式错误！");
         }
     }
 
-    public void checkVerificationCode(String verifyCode,HttpSession session) {
+    public void checkVerificationCode(String verifyCode, HttpSession session) {
         String serverVerifyCode = (String) session.getAttribute(UserConstant.VERIFY_CODE);
         Long expirationTime = (Long) session.getAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME);
         // session中属性为空
-        if (expirationTime==null || serverVerifyCode==null) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"请重新获取验证码！");
+        if (expirationTime == null || serverVerifyCode == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请重新获取验证码！");
         }
         long currentTimeMillis = System.currentTimeMillis();
         // 超时失效，重新发送覆盖验证码和时间戳
         if (currentTimeMillis > expirationTime)
-            throw new BusinessException(ResponseCode.TIME_OUT,"验证码超时失效!");
+            throw new BusinessException(ResponseCode.TIME_OUT, "验证码超时失效!");
         // 验证失败，重新尝试输入，不正确重新发送验证码
         if (!serverVerifyCode.equals(verifyCode))
-            throw new BusinessException(ResponseCode.PARAMS_ERROR,"验证码错误!");
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "验证码错误!");
     }
 
     public UserVO getUserVO(User user) {

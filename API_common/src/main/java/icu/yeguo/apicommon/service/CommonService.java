@@ -8,4 +8,5 @@ public interface CommonService {
     String generateSignature(String message);
     Long invokingCount(long interfaceInfoId);
     Long getInterfaceInfoId(String url);
+    Integer deductGoldCoin(Long interfaceInfoId,User user);
 }

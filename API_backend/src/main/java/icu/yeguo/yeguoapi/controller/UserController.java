@@ -226,5 +226,12 @@ public class UserController {
         ASKeyVO result = userServiceImpl.upASKey(id);
         return ResultUtils.success(result);
     }
+
+    // 用户充值果币
+    @PutMapping("recharge/{userId}/{goldCoin}")
+    public Result<Integer> recharge(@PathVariable("userId") Long userId, @PathVariable("goldCoin") Long goldCoin) {
+        Integer result = userServiceImpl.recharge(userId,goldCoin);
+        return ResultUtils.success(result);
+    }
 }
 
