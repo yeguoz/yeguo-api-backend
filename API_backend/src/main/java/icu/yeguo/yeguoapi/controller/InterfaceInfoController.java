@@ -33,9 +33,6 @@ public class InterfaceInfoController {
     @Autowired
     private InterfaceInfoService interfaceInfoServiceImpl;
 
-    @Autowired
-    private YGAPIClient ygapiClient;
-
     /*
      *  注册
      * */
@@ -131,13 +128,11 @@ public class InterfaceInfoController {
                 File tempFile = File.createTempFile("upload", file.getOriginalFilename());
                 file.transferTo(tempFile);
                 paramMap.put("file", tempFile);
-                System.out.println(paramMap);
                 result = HttpRequest.post(invokingRequest.getUrl())
                         .header("Content-Type", "multipart/form-data")
                         .form(paramMap)
                         .timeout(6 * 60 * 60 * 1000)
                         .execute().body();
-                System.out.println(result);
             }else {
                 result = HttpRequest.post(invokingRequest.getUrl())
                         .form(paramMap)
