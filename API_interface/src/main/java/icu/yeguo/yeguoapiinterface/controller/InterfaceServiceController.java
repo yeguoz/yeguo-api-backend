@@ -3,7 +3,10 @@ package icu.yeguo.yeguoapiinterface.controller;
 import cn.hutool.http.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 @Slf4j
@@ -78,5 +81,36 @@ public class InterfaceServiceController {
         paramMap.put("type", type);
         paramMap.put("size", size);
         return HttpUtil.get("https://api.oioweb.cn/api/qrcode/encode", paramMap);
+    }
+
+    // 二维码解析
+    @PostMapping("/qrcode/decode")
+    public String getDecode(@RequestPart("file") MultipartFile file) {
+        log.info("请求到==>/api/qrcode/decode接口==file ContentType: " + file.getContentType());
+        log.info("请求到==>/api/qrcode/decode接口==file OriginalFilename: " + file.getOriginalFilename());
+
+        // 将 MultipartFile 转换为 File
+        File tempFile;
+        try {
+            tempFile = File.createTempFile("upload", file.getOriginalFilename());
+            file.transferTo(tempFile);
+        } catch (IOException e) {
+            log.error("转换文件失败", e);
+            return "{\"code\":500,\"result\":null,\"msg\":\"转换文件失败!\"}";
+        }
+
+        // 构建参数
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("file", tempFile);
+
+        // 调用外部接口
+        String result = HttpUtil.post("https://api.oioweb.cn/api/qrcode/decode", paramMap);
+
+        // 删除临时文件
+        if (tempFile.exists()) {
+            tempFile.delete();
+        }
+
+        return result;
     }
 }
