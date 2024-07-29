@@ -29,7 +29,10 @@ spring:
       max-idle: 8          #连接池最大空闲连接 默认8
       min-idle: 0          #连接池最小空闲连接 默认 0
   timeout: 5000            # 超时时间
-
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 # mybatis-plus
 mybatis-plus:
   configuration:
