@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
 import icu.yeguo.apicommon.model.entity.User;
 import icu.yeguo.apicommon.service.CommonService;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.commons.fileupload.MultipartStream;
@@ -86,6 +87,7 @@ public class CustomGlobalFilter implements GlobalFilter {
 
                     ServerHttpRequest mutatedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
                         @Override
+                        @NonNull
                         public Flux<DataBuffer> getBody() {
                             return Flux.defer(() -> Mono.just(exchange.getResponse().bufferFactory().wrap(bytes)));
                         }
@@ -213,7 +215,7 @@ public class CustomGlobalFilter implements GlobalFilter {
         return boundary;
     }
 
-    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,
+    private Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,
                                      Long interfaceInfoId, User user) {
         try {
             ServerHttpResponse originalResponse = exchange.getResponse();
