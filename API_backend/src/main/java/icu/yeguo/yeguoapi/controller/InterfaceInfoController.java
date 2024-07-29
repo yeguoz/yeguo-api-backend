@@ -10,7 +10,6 @@ import icu.yeguo.yeguoapi.exception.BusinessException;
 import icu.yeguo.yeguoapi.model.dto.interfaceInfo.*;
 import icu.yeguo.yeguoapi.model.vo.InterfaceInfoVO;
 import icu.yeguo.yeguoapi.service.InterfaceInfoService;
-import icu.yeguo.yeguoapisdk.client.YGAPIClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +114,7 @@ public class InterfaceInfoController {
                 paramMap.put(item.getName(), item.getValue());
             }
             result = HttpRequest.get(invokingRequest.getUrl())
+                    .header("X-Online-invoking","GET")
                     .form(paramMap)//表单内容
                     .timeout(6 * 60 * 60 * 1000)//超时，毫秒
                     .execute().body();
@@ -129,12 +129,14 @@ public class InterfaceInfoController {
                 file.transferTo(tempFile);
                 paramMap.put("file", tempFile);
                 result = HttpRequest.post(invokingRequest.getUrl())
+                        .header("X-Online-invoking","POST")
                         .header("Content-Type", "multipart/form-data")
                         .form(paramMap)
                         .timeout(6 * 60 * 60 * 1000)
                         .execute().body();
             }else {
                 result = HttpRequest.post(invokingRequest.getUrl())
+                        .header("X-Online-invoking","POST")
                         .form(paramMap)
                         .timeout(6 * 60 * 60 * 1000)
                         .execute().body();

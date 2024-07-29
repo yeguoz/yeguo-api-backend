@@ -33,12 +33,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j
 @Order(-1)
 public class CustomGlobalFilter implements GlobalFilter {
     private static final String GATEWAY = "http://localhost:8082";
+    private static final Pattern SVG_PATTERN = Pattern.compile(
+            "<svg[^>]*xmlns=\"http://www.w3.org/2000/svg\"[^>]*>",
+            Pattern.CASE_INSENSITIVE
+    );
     @DubboReference
     private CommonService commonService;
 
@@ -47,6 +53,7 @@ public class CustomGlobalFilter implements GlobalFilter {
         try {
             ServerHttpRequest request = exchange.getRequest();
             logRequestDetails(request);
+
             String requestUrl = GATEWAY + request.getPath();
             log.info("请求接口URL:" + requestUrl);
             Long interfaceInfoId = commonService.getInterfaceInfoId(requestUrl);
@@ -55,7 +62,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                 exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
                 return exchange.getResponse().setComplete();
             }
-
+            // POST 请求处理
             if (HttpMethod.POST.equals(request.getMethod())) {
                 return DataBufferUtils.join(exchange.getRequest().getBody()).flatMap(dataBuffer -> {
                     byte[] bytes = new byte[dataBuffer.readableByteCount()];
@@ -88,6 +95,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                             signature, interfaceInfoId);
                 });
             } else {
+                // GET请求处理
                 MultiValueMap<String, String> queryParams = request.getQueryParams();
                 String accessKey = queryParams.getFirst("accessKey");
                 String signature = queryParams.getFirst("signature");
@@ -102,6 +110,7 @@ public class CustomGlobalFilter implements GlobalFilter {
     }
 
     private void logRequestDetails(ServerHttpRequest request) {
+        log.info("新的请求 =======================================================================================");
         log.info("请求id:" + request.getId());
         log.info("请求方法:" + request.getMethod());
         log.info("请求接口URI:" + request.getURI());
@@ -117,6 +126,10 @@ public class CustomGlobalFilter implements GlobalFilter {
                                       String accessKey, String signature, Long interfaceInfoId) {
         log.info("accessKey:" + accessKey);
         log.info("signature:" + signature);
+
+        ServerHttpRequest request = exchange.getRequest();
+        String X_Online_Invoking = request.getHeaders().getFirst("X-Online-invoking");
+
         try {
             User user = commonService.getUser(accessKey);
             if (user == null) {
@@ -135,6 +148,18 @@ public class CustomGlobalFilter implements GlobalFilter {
                 return exchange.getResponse().setComplete();
             }
 
+            // 没有该请求头 不是在线调用 扣金币
+            if (X_Online_Invoking == null) {
+                boolean success = deductGoldCoin(interfaceInfoId, user);
+                // 失败
+                if (!success) {
+                    exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
+                    String responseBody = "{\"code\":400,\"result\":null,\"message\":\"果币不足\"}";
+                    DataBuffer buffer = exchange.getResponse().bufferFactory()
+                            .wrap(responseBody.getBytes(StandardCharsets.UTF_8));
+                    return exchange.getResponse().writeWith(Mono.just(buffer));
+                }
+            }
             return handleResponse(exchange, chain, interfaceInfoId, user);
         } catch (Exception e) {
             log.error("处理请求时发生异常", e);
@@ -195,7 +220,7 @@ public class CustomGlobalFilter implements GlobalFilter {
             HttpStatus statusCode = (HttpStatus) originalResponse.getStatusCode();
             DataBufferFactory bufferFactory = originalResponse.bufferFactory();
 
-            log.info("响应日志 ============================================");
+            log.info("响应日志 =====================================================================================");
             log.info("HttpStatusCode:" + statusCode);
 
             if (statusCode == HttpStatus.OK) {
@@ -212,22 +237,34 @@ public class CustomGlobalFilter implements GlobalFilter {
                                         byte[] content = new byte[dataBuffer.readableByteCount()];
                                         dataBuffer.read(content);
                                         DataBufferUtils.release(dataBuffer);
-
+                                        // 对响应进行处理和响应后操作
                                         String data = new String(content, StandardCharsets.UTF_8);
                                         log.info("响应结果：" + data);
                                         Response response = null;
-
-                                        if (data.contains("svg")) {
-                                            invoking(interfaceInfoId, user);
+                                        // 返回svg二维码处理
+                                        if (isSvg(data)) {
+                                            // 接口计数
+                                            invoking(interfaceInfoId);
                                         } else {
+                                            // 其他JSON返回处理
                                             try {
                                                 response = JSON.parseObject(data, Response.class);
                                             } catch (JSONException e) {
                                                 log.error("JSON解析错误: ", e);
                                             }
-
+                                            // 调用接口成功后 处理
                                             if (response != null && response.getCode() == 200) {
-                                                invoking(interfaceInfoId, user);
+                                                // 调用计数
+                                                invoking(interfaceInfoId);
+                                            }
+                                            // 调用成功 但是失败返还金币
+                                            if (response != null && response.getCode() != 200) {
+                                                Long goldCoins = commonService.returnGoldCoins(interfaceInfoId, user);
+                                                if (goldCoins < 0) {
+                                                    log.error("果币返还失败");
+                                                } else {
+                                                    log.info("果币返还成功，当前果币：" + goldCoins);
+                                                }
                                             }
                                         }
 
@@ -249,13 +286,26 @@ public class CustomGlobalFilter implements GlobalFilter {
         }
     }
 
-    private void invoking(Long interfaceInfoId, User user) {
+    private boolean deductGoldCoin(Long interfaceInfoId, User user) {
+        User updatedUser = null;
         try {
-            Integer i = commonService.deductGoldCoin(interfaceInfoId, user);
-            if (i == -1) {
+            log.info("扣除金币前：" + user.getGoldCoin());
+            updatedUser = commonService.deductGoldCoin(interfaceInfoId, user);
+            if (updatedUser == null) {
                 log.warn(user.getId() + ":扣除金币失败");
+                return false;
             }
+        } catch (Exception e) {
+            log.error("扣除金币时发生异常", e);
+        }
+        if (updatedUser != null) {
+            log.info("扣除金币后：" + updatedUser.getGoldCoin());
+        }
+        return true;
+    }
 
+    private void invoking(Long interfaceInfoId) {
+        try {
             Long count = commonService.invokingCount(interfaceInfoId);
             if (count < 0) {
                 log.warn("接口调用次数更新失败====接口id为：" + interfaceInfoId);
@@ -264,5 +314,14 @@ public class CustomGlobalFilter implements GlobalFilter {
         } catch (Exception e) {
             log.error("调用接口时发生异常", e);
         }
+    }
+
+    private boolean isSvg(String content) {
+        if (content == null) {
+            return false;
+        }
+        // 使用正则表达式匹配内容
+        Matcher matcher = SVG_PATTERN.matcher(content.trim());
+        return matcher.find();
     }
 }
