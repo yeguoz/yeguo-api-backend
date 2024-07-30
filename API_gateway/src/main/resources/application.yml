@@ -8,7 +8,7 @@ spring:
         - AddRequestHeader=source, yeguo_api_gateway # 流量染色
       routes:
         - id: api_router
-          uri: http://localhost:8081/api
+          uri: http://localhost:8082/api
           predicates:
             - Path=/api/**
 
@@ -19,7 +19,7 @@ logging:
         cloud:
           gateway: info
 server:
-  port: 8082
+  port: 8081
 
 dubbo:
   application:

@@ -6,12 +6,7 @@ import cn.hutool.crypto.digest.HmacAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import cn.hutool.http.HttpRequest;
 import icu.yeguo.yeguoapi.constant.SecretConstant;
-import icu.yeguo.yeguoapi.mapper.OrderInfoMapper;
-import icu.yeguo.yeguoapisdk.client.YGAPIClient;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -45,34 +40,6 @@ class APIBackendApplicationTests {
         System.out.println(timestamp);
         // 输出格式化后的日期时间字符串
         System.out.println(formattedDateTime);
-    }
-
-    @Test
-    void interface1() {
-        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
-        String ipAddress = ygapiClient.getIpAddress("111.56.36.134");
-        System.out.println(ipAddress);
-    }
-
-    @Test
-    void interface2() {
-        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
-        String result = ygapiClient.getCityWeather("洛阳");
-        System.out.println(result);
-    }
-
-    @Test
-    void interface3() {
-        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
-        String result = ygapiClient.getPhoneLocation("17337904072");
-        System.out.println(result);
-    }
-
-    @Test
-    void interface4() {
-        YGAPIClient ygapiClient = new YGAPIClient("2B632D7FB1FB792750C913DFB1BDBE11", "13849F1D2440F935B1C0651446418EDB");
-        String result = ygapiClient.getSiteIcp("bilibili.com");
-        System.out.println(result);
     }
 
     @Test

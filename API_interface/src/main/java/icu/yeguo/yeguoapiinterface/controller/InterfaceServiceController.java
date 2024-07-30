@@ -21,37 +21,37 @@ public class InterfaceServiceController {
         return executeGetRequest("https://api.oioweb.cn/api/qq/info","qq",qq);
     }
 
-    // 获取ip地址
+    // 1.获取ip地址
     @GetMapping("ip/ipaddress")
     public String getIpAddress(@RequestParam("ip") String ip) {
         log.info("请求到==>/api/ip/ipaddress接口==ip" + ip);
         return executeGetRequest("https://api.oioweb.cn/api/ip/ipaddress","ip",ip);
     }
 
-    // 获取天气
+    // 2.获取天气
     @GetMapping("weather")
     public String getCityWeather(@RequestParam("city_name") String cityName) {
         log.info("请求到==>/api/weather接口==cityName" + cityName);
         return executeGetRequest("https://api.oioweb.cn/api/weather/weather","city_name",cityName);
     }
 
-    // 获取手机归属地
+    // 3.获取手机归属地
     @GetMapping("common/teladress")
     public String getPhoneLocation(@RequestParam("mobile") String mobile) {
         log.info("请求到==>/api/phone接口==mobile:" + mobile);
         return executeGetRequest("https://api.oioweb.cn/api/common/teladress","mobile",mobile);
     }
 
-    // 获取网站备案信息
+    // 4.获取网站备案信息
     @GetMapping("site/icp")
     public String getSiteIcp(@RequestParam("domain") String domain) {
         log.info("请求到==>/api/site/icp接口==domain:" + domain);
         return executeGetRequest("https://api.oioweb.cn/api/site/icp","domain",domain);
     }
 
-    // 二维码生成
+    // 5.二维码生成
     @GetMapping("qrcode/encode")
-    public String getEncode(@RequestParam("text") String text,
+    public String getQrcodeEncode(@RequestParam("text") String text,
                             @RequestParam(value = "m", required = false) Integer m,
                             @RequestParam(value = "type", required = false) String type,
                             @RequestParam(value = "size", required = false) Integer size) {
@@ -74,44 +74,44 @@ public class InterfaceServiceController {
         return HttpUtil.get("https://api.oioweb.cn/api/qrcode/encode", paramMap);
     }
 
-    // 二维码解析
+    // 6.二维码解析
     @PostMapping("qrcode/decode")
-    public String getDecode(@RequestPart("file") MultipartFile file) {
+    public String getQrcodeDecode(@RequestPart("file") MultipartFile file) {
         log.info("请求到==>/api/qrcode/decode接口==file");
         return handleFileUpload(file, "https://api.oioweb.cn/api/qrcode/decode");
     }
 
-    // 每日电影
+    // 7.每日电影
     @GetMapping("common/OneFilm")
-    public String OneFilm() {
+    public String getOneFilm() {
         log.info("请求到==>/api/common/OneFilm接口");
         return HttpUtil.get("https://api.oioweb.cn/api/common/OneFilm");
     }
 
-    // 看图识物
+    // 8.看图识物
     @PostMapping("ocr/recognition")
     public String recognition(@RequestPart("file") MultipartFile file) {
         log.info("请求到==>/api/ocr/recognition接口==file");
         return handleFileUpload(file, "https://api.oioweb.cn/api/ocr/recognition");
     }
 
-    // 看图识物
+    // 9.以图识番
     @PostMapping("search/anilistInfo")
     public String searchAnimeInfo(@RequestPart("file") MultipartFile file) {
         log.info("请求到==>/api/search/anilistInfo接口==file");
         return handleFileUpload(file, "https://api.oioweb.cn/api/search/anilistInfo");
     }
 
-    // 日读世界60s
+    // 10.日读世界60s
     @GetMapping("common/today")
     public String getTodayInfo() {
         log.info("请求到==>/api/common/today接口");
         return HttpUtil.get("https://api.oioweb.cn/api/common/today");
     }
 
-    // 热搜榜
+    // 11.热搜榜
     @GetMapping("common/fetchHotSearchBoard")
-    public String fetchHotSearchBoard(@RequestParam("type") String type) {
+    public String getHotSearch(@RequestParam("type") String type) {
         log.info("请求到==>/api/common/fetchHotSearchBoard接口");
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("type", type);
