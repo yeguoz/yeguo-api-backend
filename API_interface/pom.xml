@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>icu.yeguo</groupId>
+            <groupId>icu.yeguo.common</groupId>
             <artifactId>yeguo-api-sdk</artifactId>
             <version>0.0.1</version>
         </dependency>

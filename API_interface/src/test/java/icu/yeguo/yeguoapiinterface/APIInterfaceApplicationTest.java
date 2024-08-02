@@ -1,6 +1,7 @@
 package icu.yeguo.yeguoapiinterface;
 
 import icu.yeguo.yeguoapisdk.client.YGApiClient;
+import icu.yeguo.yeguoapisdk.exception.YGApiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,5 +37,25 @@ public class APIInterfaceApplicationTest {
         System.out.println("searchAnimeInfo:" + result9);
         System.out.println("getTodayInfo:" + result10);
         System.out.println("getHotSearch:" + result11);
+    }
+
+    @Test
+    public void test2() {
+        String result = null;
+        YGApiClient ygApiClient1 = null;
+        try {
+            String accessKey = "290F6AA4F0BFE8F584DE60D25E56706F";
+            String secretKey = "3F661CAD463534FC5634D095F81AC605";
+            ygApiClient1 = new YGApiClient(accessKey,secretKey);
+            result = ygApiClient1.getIpAddress("111.56.36.134");
+        } catch (YGApiException e) {
+            System.out.println(e);
+        }
+        System.out.println(result);
+        String result1 = null;
+        if (ygApiClient1 != null) {
+            result1 = ygApiClient1.getQrcodeDecode("C:\\Users\\Lenovo\\Pictures\\zfbskm.jpg");
+        }
+        System.out.println(result1);
     }
 }
