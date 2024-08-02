@@ -13,8 +13,8 @@ import java.util.ArrayList;
 
 /**
  * @author yeguo
- *  针对表【user(用户表)】的数据库操作Service
- *  2024-05-08 18:58:22
+ * 针对表【user(用户表)】的数据库操作Service
+ * 2024-05-08 18:58:22
  */
 public interface UserService extends IService<User> {
     long userRegister(String username, String userAccount, String userPassword, String checkPassword);
@@ -44,4 +44,6 @@ public interface UserService extends IService<User> {
     ASKeyVO upASKey(Long id);
 
     Integer recharge(Long userId, Long goldCoin);
+
+    Integer forgetPassword(String email, String newPassword, String checkNewPassword, String verifyCode, HttpServletRequest req);
 }

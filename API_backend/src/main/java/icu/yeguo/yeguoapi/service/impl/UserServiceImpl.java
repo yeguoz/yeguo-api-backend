@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -339,7 +340,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // 邮箱被使用 将验证码和过期时间删除，重新发送
+        // 邮箱被使用 将验证码和过期时间删除
         if (count > 0) {
             session.removeAttribute(UserConstant.VERIFY_CODE);
             session.removeAttribute(UserConstant.VERIFY_CODE_EXPIRATION_TIME);
@@ -476,6 +477,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return 1;
     }
 
+    @Transactional
+    @Override
+    public Integer forgetPassword(String email, String newPassword, String checkNewPassword, String verifyCode,
+                                  HttpServletRequest req) {
+        // 检查密码和验证密码符合规则 长度
+        // 数据不能为空
+        if (StrUtil.hasBlank(newPassword, checkNewPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求包含空数据");
+        }
+        // 密码不小于8位
+        if (newPassword.length() < 8) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码长度过短");
+        }
+        if (!newPassword.equals(checkNewPassword)) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "两次密码不一致");
+        }
+        //  验证验证码是否有效
+        checkVerificationCode(verifyCode, req.getSession());
+        // 有效正确则更新数据库
+        try {
+            LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(User::getEmail, email);
+            User user = userMapper.selectOne(lambdaQueryWrapper);
+            if (user == null) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "用户不存在");
+            }
+            // 用户存在密码加密 设置新密码
+            String encryptedPassword = sm4.encryptHex(newPassword);
+            if (user.getUserPassword().equals(encryptedPassword)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "新密码不能与旧密码相同");
+            }
+            user.setUserPassword(encryptedPassword);
+            int i = userMapper.updateById(user);
+            if (i < 0) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "密码修改失败");
+            }
+        } catch (BusinessException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+        return 1;
+    }
+
     public void checkMailbox(String email, HttpSession session) {
         String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         // 编译正则表达式
@@ -556,7 +601,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             resultMap.put("accessKey", md5AccessKey);
             resultMap.put("secretKey", md5SecretKey);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.warn(e.getMessage());
         }
         return resultMap;
     }
