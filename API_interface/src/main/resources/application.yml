@@ -5,11 +5,11 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
+      max-file-size: 3MB
+      max-request-size: 3MB
 
 yeguo:
   api:
-    access-key: 290F6AA4F0BFE8F584DE60D25E56706F
-    secret-key: 3F661CAD463534FC5634D095F81AC605
-
+    access-key: CB9CF36F3EFD11FB5A197DDACF316477
+    secret-key: 641129389C10A6D9516511353A1516EB
+    gateway: "https://gw.yeguo.icu"

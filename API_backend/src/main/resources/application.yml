@@ -15,12 +15,11 @@ spring:
   session:
     timeout: 86400
     store-type: redis
-
   # redis
   data:
     redis:
       port: 6379
-      host: localhost
+      host: 127.0.0.1
       database: 0
   lettuce:
     pool:
@@ -31,8 +30,8 @@ spring:
   timeout: 5000            # 超时时间
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
+      max-file-size: 3MB
+      max-request-size: 3MB
 # mybatis-plus
 mybatis-plus:
   configuration:
@@ -59,7 +58,7 @@ springdoc:
   group-configs:
     - group: 'default'
       paths-to-match: '/**'
-      packages-to-scan: com.yeguo.yeguoapi.controller
+      packages-to-scan: icu.yeguo.yeguoapi.controller
 # knife4j
 knife4j:
   enable: true
@@ -73,7 +72,7 @@ dubbo:
     name: dubbo-springboot-provider
   protocol:
     name: dubbo
-#    port: -1
+  #    port: -1
   registry:
     id: nacos-registry
     address: nacos://localhost:8848

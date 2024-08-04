@@ -11,7 +11,10 @@ spring:
           uri: http://localhost:8082/api
           predicates:
             - Path=/api/**
-
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB
 logging:
   level:
     org:
@@ -33,3 +36,9 @@ dubbo:
     id: nacos-registry
     # todo 线上修改为服务器内网地址，参考nacos启动后的链接
     address: nacos://localhost:8848
+
+yeguo:
+  gateway:
+    base-url: http://localhost:8081
+
+
