@@ -44,12 +44,13 @@ public class APIInterfaceApplicationTest {
         String result = null;
         YGApiClient ygApiClient1 = null;
         try {
-            String accessKey = "290F6AA4F0BFE8F584DE60D25E56706F";
-            String secretKey = "3F661CAD463534FC5634D095F81AC605";
-            ygApiClient1 = new YGApiClient(accessKey,secretKey);
+            String accessKey = "CB9CF36F3EFD11FB5A197DDACF316477";
+            String secretKey = "641129389C10A6D9516511353A1516EB";
+            ygApiClient1 = new YGApiClient(accessKey, secretKey, "https://gw.yeguo.icu");
+
             result = ygApiClient1.getIpAddress("111.56.36.134");
         } catch (YGApiException e) {
-            System.out.println(e);
+            System.out.println("调用异常");
         }
         System.out.println(result);
         String result1 = null;
@@ -57,5 +58,6 @@ public class APIInterfaceApplicationTest {
             result1 = ygApiClient1.getQrcodeDecode("C:\\Users\\Lenovo\\Pictures\\zfbskm.jpg");
         }
         System.out.println(result1);
+
     }
 }

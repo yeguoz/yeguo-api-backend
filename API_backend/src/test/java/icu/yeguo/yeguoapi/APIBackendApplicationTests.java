@@ -69,7 +69,7 @@ class APIBackendApplicationTests {
     @Test
     void crypto() {
         // 加密
-        String content = "test中文";
+        String content = "123456789";
         SymmetricCrypto sm4 = new SymmetricCrypto("SM4", "野果_API平台".getBytes());
 
         String encryptHex = sm4.encryptHex(content);
