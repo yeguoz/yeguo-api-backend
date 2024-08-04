@@ -394,43 +394,56 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public int upPersonInfo(UserPersonUpdateParams userPersonUpdateParams) {
+        Long id = userPersonUpdateParams.getId();
+        String username = userPersonUpdateParams.getUsername();
+        String email = userPersonUpdateParams.getEmail();
+        String phone = userPersonUpdateParams.getPhone();
+        String avatarUrl = userPersonUpdateParams.getAvatarUrl();
+
         // 邮箱规则
         String regex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
-        if (!userPersonUpdateParams.getEmail().matches(regex)) {
+        if (email != null && !email.isEmpty() && !email.matches(regex)) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱格式错误");
         }
+
         // 手机规则
         String regexPhone = "^1[3-9]\\d{9}$";
-        if (!userPersonUpdateParams.getPhone().matches(regexPhone)) {
+        if (phone != null && !phone.isEmpty() && !phone.matches(regexPhone)) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "手机格式错误");
         }
+
         // 邮箱不能重复
-        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(User::getEmail, userPersonUpdateParams.getEmail());
-        Long count;
-        User user;
-        try {
-            count = userMapper.selectCount(lambdaQueryWrapper);
-            user = selectById(userPersonUpdateParams.getId());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        User user = null;
+        if (email != null) {
+            LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(User::getEmail, email);
+            Long count;
+            try {
+                count = userMapper.selectCount(lambdaQueryWrapper);
+                user = selectById(id);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            // 不填邮箱默认是传递空字符串
+            if (count > 0 && !email.equals(user.getEmail())) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱已被使用");
+            }
         }
-        // 不填邮箱默认是传递空字符串
-        if (count > 0 && !userPersonUpdateParams.getEmail().equals(user.getEmail())) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "邮箱已被使用");
-        }
-        user.setUsername(userPersonUpdateParams.getUsername());
-        user.setEmail(userPersonUpdateParams.getEmail());
-        user.setPhone(userPersonUpdateParams.getPhone());
-        user.setAvatarUrl(userPersonUpdateParams.getAvatarUrl());
-        int result;
-        try {
-            result = userMapper.updateById(user);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        // 更新用户信息
+        int result = 0;
+        if (user != null) {
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPhone(phone);
+            user.setAvatarUrl(avatarUrl);
+            try {
+                result = userMapper.updateById(user);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         if (result < 1)
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败,请检查代码");
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "更新失败");
         return 1;
     }
 
