@@ -25,11 +25,6 @@
             <artifactId>API_common</artifactId>
             <version>0.0.1</version>
         </dependency>
-        <dependency>
-            <groupId>icu.yeguo.common</groupId>
-            <artifactId>yeguo-api-sdk</artifactId>
-            <version>0.0.1</version>
-        </dependency>
         <!-- dubbo -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -119,13 +114,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                    <mainClass>icu.yeguo.yeguoapi.APIBackendApplication</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
