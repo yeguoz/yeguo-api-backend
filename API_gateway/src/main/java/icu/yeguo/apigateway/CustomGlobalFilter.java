@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.commons.fileupload.MultipartStream;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.annotation.Order;
@@ -41,7 +42,8 @@ import java.util.regex.Pattern;
 @Slf4j
 @Order(-1)
 public class CustomGlobalFilter implements GlobalFilter {
-    private static final String GATEWAY = "http://localhost:8081";
+    @Value("${yeguo.gateway.base-url}")
+    private String baseUrl;
     private static final Pattern SVG_PATTERN = Pattern.compile(
             "<svg[^>]*xmlns=\"http://www.w3.org/2000/svg\"[^>]*>",
             Pattern.CASE_INSENSITIVE
@@ -55,7 +57,7 @@ public class CustomGlobalFilter implements GlobalFilter {
             ServerHttpRequest request = exchange.getRequest();
             logRequestDetails(request);
 
-            String requestUrl = GATEWAY + request.getPath();
+            String requestUrl = baseUrl + request.getPath();
             log.info("请求接口URL:" + requestUrl);
             Long interfaceInfoId = commonService.getInterfaceInfoId(requestUrl);
             if (interfaceInfoId == null) {
