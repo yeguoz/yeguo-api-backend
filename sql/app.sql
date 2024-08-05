@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `order_info`
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8
-  COLLATE = utf8_unicode_ci;
+  COLLATE = utf8_unicode_ci COMMENT ='订单表';
 
 -- 数据导出被取消选择。
 
