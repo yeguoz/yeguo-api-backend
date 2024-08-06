@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
   <img data-type="dingtalk" src="https://cdn.jsdelivr.net/gh/ye-guo/Images/images/ygIcon512.png" width="100" alt="logo"/>
   <h2>YGAPI 开发者文档</h2>
   <p>YGAPI 接口开放平台是一个为用户开发者提供稳定、安全、高效的接口调用服务平台</p>
