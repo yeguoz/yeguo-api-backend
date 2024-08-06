@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center;">
   <img data-type="dingtalk" src="https://cdn.jsdelivr.net/gh/ye-guo/Images/images/ygIcon512.png" width="100" alt="logo"/>
   <h2>YGAPI 开发者文档</h2>
   <p>YGAPI 接口开放平台是一个为用户开发者提供稳定、安全、高效的接口调用服务平台</p>
@@ -12,7 +12,7 @@ YGAPI 是一个基于 Ant Design Pro 和 Spring Boot 的接口开放平台，旨
 
 - [YGAPI 前端 🔗 ](https://github.com/ye-guo/yeguo-api-frontend)
 - [YGAPI 后端 🔗 ](https://github.com/ye-guo/yeguo-api-backend)
-- [YGAPI 接口开放平台在线平台 🔗 ](#环境准备)
+- [YGAPI 接口开放平台在线平台 🔗 ](https://api.yeguo.icu)
 - [YGAPI 开发者文档 📚](https://apidocs.yeguo.icu)
 - [YGAPI-SDK🧰](https://apidocs.yeguo.icu/guide/getting-started#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
 
