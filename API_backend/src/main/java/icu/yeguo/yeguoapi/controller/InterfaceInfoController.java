@@ -95,10 +95,10 @@ public class InterfaceInfoController {
         /*
          * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
          * */
-        log.info("invokingRequest:" + invokingRequest);
-        log.info("irp:" + Arrays.toString(invokingRequest.getIrp()));
-        log.info("accessKey:" + accessKey);
-        log.info("signature:" + signature);
+        log.info("invokingRequest:{}", invokingRequest);
+        log.info("irp:{}", Arrays.toString(invokingRequest.getIrp()));
+        log.info("accessKey:{}", accessKey);
+        log.info("signature:{}", signature);
 
         InvokingRequestParams[] irp = invokingRequest.getIrp();
         String result = null;

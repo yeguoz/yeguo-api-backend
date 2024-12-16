@@ -58,7 +58,7 @@ public class CustomGlobalFilter implements GlobalFilter {
             logRequestDetails(request);
 
             String requestUrl = baseUrl + request.getPath();
-            log.info("请求接口URL:" + requestUrl);
+            log.info("请求接口URL:{}", requestUrl);
             Long interfaceInfoId = commonService.getInterfaceInfoId(requestUrl);
             if (interfaceInfoId == null) {
                 log.error("接口不存在");
@@ -85,7 +85,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                         return exchange.getResponse().setComplete();
                     }
 
-                    log.info("POST请求参数：accessKey=" + accessKey + ", signature=" + signature);
+                    log.info("POST请求参数：accessKey={}, signature={}", accessKey, signature);
 
                     ServerHttpRequest mutatedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
                         @Override
@@ -103,7 +103,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                 MultiValueMap<String, String> queryParams = request.getQueryParams();
                 String accessKey = queryParams.getFirst("accessKey");
                 String signature = queryParams.getFirst("signature");
-                log.info("GET请求参数：accessKey=" + accessKey + ", signature=" + signature);
+                log.info("GET请求参数：accessKey={}, signature={}", accessKey, signature);
                 return processRequest(exchange, chain, accessKey, signature, interfaceInfoId);
             }
         } catch (Exception e) {
@@ -115,21 +115,21 @@ public class CustomGlobalFilter implements GlobalFilter {
 
     private void logRequestDetails(ServerHttpRequest request) {
         log.info("新的请求 =======================================================================================");
-        log.info("请求id:" + request.getId());
-        log.info("请求方法:" + request.getMethod());
-        log.info("请求接口URI:" + request.getURI());
-        log.info("请求路径:" + request.getPath());
-        log.info("请求Cookies:" + request.getCookies());
-        log.info("请求参数:" + request.getQueryParams());
-        log.info("本地网关地址:" + request.getLocalAddress());
-        log.info("远程请求地址:" + request.getRemoteAddress());
-        log.info("请求头:" + request.getHeaders());
+        log.info("请求id:{}" , request.getId());
+        log.info("请求方法:{}", request.getMethod());
+        log.info("请求接口URI:{}", request.getURI());
+        log.info("请求路径:{}", request.getPath());
+        log.info("请求Cookies:{}", request.getCookies());
+        log.info("请求参数:{}", request.getQueryParams());
+        log.info("本地网关地址:{}", request.getLocalAddress());
+        log.info("远程请求地址:{}", request.getRemoteAddress());
+        log.info("请求头:{}", request.getHeaders());
     }
 
     private Mono<Void> processRequest(ServerWebExchange exchange, GatewayFilterChain chain,
                                       String accessKey, String signature, Long interfaceInfoId) {
-        log.info("accessKey:" + accessKey);
-        log.info("signature:" + signature);
+        log.info("accessKey:{}", accessKey);
+        log.info("signature:{}", signature);
 
         ServerHttpRequest request = exchange.getRequest();
         String X_Online_Invoking = request.getHeaders().getFirst("X-Online-invoking");
@@ -144,7 +144,7 @@ public class CustomGlobalFilter implements GlobalFilter {
 
             String message = user.getAccessKey() + user.getSecretKey();
             String generatedSignature = commonService.generateSignature(message);
-            log.info("服务端验证签名:" + generatedSignature);
+            log.info("服务端验证签名:{}", generatedSignature);
 
             if (!generatedSignature.equals(signature)) {
                 log.info("签名不一致");
@@ -225,25 +225,26 @@ public class CustomGlobalFilter implements GlobalFilter {
             DataBufferFactory bufferFactory = originalResponse.bufferFactory();
 
             log.info("响应日志 =====================================================================================");
-            log.info("HttpStatusCode:" + statusCode);
+            log.info("HttpStatusCode:{}", statusCode);
 
             if (statusCode == HttpStatus.OK) {
                 ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
                     @Override
-                    public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                    public Mono<Void> writeWith( Publisher<? extends DataBuffer> body) {
                         log.info("body instanceof Flux: {}", (body instanceof Flux));
 
                         if (body instanceof Flux) {
                             Flux<DataBuffer> fluxBody = (Flux<DataBuffer>) body;
 
-                            return DataBufferUtils.join(fluxBody)
+                            return DataBufferUtils
+                                    .join(fluxBody)
                                     .flatMap(dataBuffer -> {
                                         byte[] content = new byte[dataBuffer.readableByteCount()];
                                         dataBuffer.read(content);
                                         DataBufferUtils.release(dataBuffer);
                                         // 对响应进行处理和响应后操作
                                         String data = new String(content, StandardCharsets.UTF_8);
-                                        log.info("响应结果：" + data);
+                                        log.info("响应结果：{}", data);
                                         Response response = null;
                                         // 返回svg二维码处理
                                         if (isSvg(data)) {
@@ -256,9 +257,8 @@ public class CustomGlobalFilter implements GlobalFilter {
                                             } catch (JSONException e) {
                                                 log.error("JSON解析错误: ", e);
                                             }
-                                            // 调用接口成功后 处理
+                                            // 调用接口成功后 处理调用次数
                                             if (response != null && response.getCode() == 200) {
-                                                // 调用计数
                                                 invoking(interfaceInfoId);
                                             }
                                             // 调用成功 但是失败返还金币
@@ -293,17 +293,17 @@ public class CustomGlobalFilter implements GlobalFilter {
     private boolean deductGoldCoin(Long interfaceInfoId, User user) {
         User updatedUser = null;
         try {
-            log.info("扣除金币前：" + user.getGoldCoin());
+            log.info("扣除金币前：{}", user.getGoldCoin());
             updatedUser = commonService.deductGoldCoin(interfaceInfoId, user);
             if (updatedUser == null) {
-                log.warn(user.getId() + ":扣除金币失败");
+                log.warn("{}:扣除金币失败", user.getId());
                 return false;
             }
         } catch (Exception e) {
             log.error("扣除金币时发生异常", e);
         }
         if (updatedUser != null) {
-            log.info("扣除金币后：" + updatedUser.getGoldCoin());
+            log.info("扣除金币后：{}", updatedUser.getGoldCoin());
         }
         return true;
     }
@@ -312,9 +312,9 @@ public class CustomGlobalFilter implements GlobalFilter {
         try {
             Long count = commonService.invokingCount(interfaceInfoId);
             if (count < 0) {
-                log.warn("接口调用次数更新失败====接口id为：" + interfaceInfoId);
+                log.warn("接口调用次数更新失败====接口id为：{}", interfaceInfoId);
             }
-            log.info("接口" + interfaceInfoId + "调用次数：" + count);
+            log.info("接口{}调用次数：{}", interfaceInfoId, count);
         } catch (Exception e) {
             log.error("调用接口时发生异常", e);
         }
