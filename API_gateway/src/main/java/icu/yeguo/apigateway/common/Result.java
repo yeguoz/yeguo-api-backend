@@ -1,12 +1,17 @@
-package icu.yeguo.apigateway;
+package icu.yeguo.apigateway.common;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
 import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-public class Response<T> implements Serializable {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Result<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = -3481618647530458478L;
     private int code;
