@@ -4,7 +4,6 @@ package icu.yeguo.yeguoapi.service.impl.provider;
 import cn.hutool.crypto.digest.HMac;
 import cn.hutool.crypto.digest.HmacAlgorithm;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import icu.yeguo.yeguoapi.constant.SecretConstant;
 import icu.yeguo.apicommon.model.entity.User;
 import icu.yeguo.apicommon.service.CommonService;
 import icu.yeguo.yeguoapi.mapper.InterfaceInfoMapper;
@@ -40,11 +39,8 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public String generateSignature(String message) {
-        // 此处密钥如果有非ASCII字符
-        byte[] key = SecretConstant.SIGNATURE_KEY.getBytes();
-        HMac mac = new HMac(HmacAlgorithm.HmacMD5, key);
-        // 生成签名
+    public String generateSignature(String message, User user) {
+        HMac mac = new HMac(HmacAlgorithm.HmacSHA256, user.getSecretKey().getBytes());
         return mac.digestHex(message);
     }
 
