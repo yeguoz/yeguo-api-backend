@@ -1,14 +1,18 @@
-package icu.yeguo.apigateway;
+package icu.yeguo.apigateway.filter;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import icu.yeguo.apicommon.model.entity.User;
 import icu.yeguo.apicommon.service.CommonService;
+import icu.yeguo.apigateway.common.Result;
+import icu.yeguo.apigateway.common.ResultUtil;
+import icu.yeguo.apigateway.util.NonceUtil;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.commons.fileupload.MultipartStream;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -23,20 +27,15 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static icu.yeguo.apicommon.constant.common.*;
 
 @Component
 @Slf4j
@@ -50,13 +49,18 @@ public class CustomGlobalFilter implements GlobalFilter {
     );
     @DubboReference
     private CommonService commonService;
+    @Autowired
+    private NonceUtil nonceUtil;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         try {
             ServerHttpRequest request = exchange.getRequest();
+            String accessKey = request.getHeaders().getFirst(X_ACCESS_KEY);
+            String signature = request.getHeaders().getFirst(X_SIGNATURE);
+            // 日志记录
             logRequestDetails(request);
-
+            // 校验请求接口是否存在
             String requestUrl = baseUrl + request.getPath();
             log.info("请求接口URL:{}", requestUrl);
             Long interfaceInfoId = commonService.getInterfaceInfoId(requestUrl);
@@ -65,6 +69,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                 exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
                 return exchange.getResponse().setComplete();
             }
+
             // POST 请求处理
             if (HttpMethod.POST.equals(request.getMethod())) {
                 return DataBufferUtils.join(exchange.getRequest().getBody()).flatMap(dataBuffer -> {
@@ -72,21 +77,15 @@ public class CustomGlobalFilter implements GlobalFilter {
                     dataBuffer.read(bytes);
                     DataBufferUtils.release(dataBuffer);
                     String bodyString = new String(bytes, StandardCharsets.UTF_8);
-                    log.info("requestBody = {}", bodyString);
-
-                    Map<String, String> formData = parseMultipartFormData(bytes,
-                            Objects.requireNonNull(request.getHeaders().getContentType()).toString());
-                    String accessKey = formData.get("accessKey");
-                    String signature = formData.get("signature");
+                    log.info("requestBody = {}", bodyString.substring(0, 200));
 
                     if (accessKey == null || signature == null) {
-                        log.error("POST请求中缺少 accessKey 或 signature 参数");
+                        log.error("POST请求头中缺少X_ACCESS_KEY或X_SIGNATURE");
                         exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
                         return exchange.getResponse().setComplete();
                     }
-
-                    log.info("POST请求参数：accessKey={}, signature={}", accessKey, signature);
-
+                    log.info("POST请求请求头：X_Access_Key : {}", accessKey);
+                    log.info("POST请求请求头：X_signature : {}", signature);
                     ServerHttpRequest mutatedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
                         @Override
                         @NonNull
@@ -100,10 +99,8 @@ public class CustomGlobalFilter implements GlobalFilter {
                 });
             } else {
                 // GET请求处理
-                MultiValueMap<String, String> queryParams = request.getQueryParams();
-                String accessKey = queryParams.getFirst("accessKey");
-                String signature = queryParams.getFirst("signature");
-                log.info("GET请求参数：accessKey={}, signature={}", accessKey, signature);
+                log.info("GET请求请求头：X_Access_Key : {}", accessKey);
+                log.info("GET请求请求头：X_signature : {}", signature);
                 return processRequest(exchange, chain, accessKey, signature, interfaceInfoId);
             }
         } catch (Exception e) {
@@ -115,7 +112,7 @@ public class CustomGlobalFilter implements GlobalFilter {
 
     private void logRequestDetails(ServerHttpRequest request) {
         log.info("新的请求 =======================================================================================");
-        log.info("请求id:{}" , request.getId());
+        log.info("请求id:{}", request.getId());
         log.info("请求方法:{}", request.getMethod());
         log.info("请求接口URI:{}", request.getURI());
         log.info("请求路径:{}", request.getPath());
@@ -132,7 +129,9 @@ public class CustomGlobalFilter implements GlobalFilter {
         log.info("signature:{}", signature);
 
         ServerHttpRequest request = exchange.getRequest();
-        String X_Online_Invoking = request.getHeaders().getFirst("X-Online-invoking");
+        String X_Online_Invoking = request.getHeaders().getFirst(X_ONLINE_INVOKING);
+        String timestamp = request.getHeaders().getFirst(X_TIMESTAMP);
+        String nonce = request.getHeaders().getFirst(X_NONCE);
 
         try {
             User user = commonService.getUser(accessKey);
@@ -142,14 +141,61 @@ public class CustomGlobalFilter implements GlobalFilter {
                 return exchange.getResponse().setComplete();
             }
 
-            String message = user.getAccessKey() + user.getSecretKey();
-            String generatedSignature = commonService.generateSignature(message);
+            // 校验时间戳是否过期
+            if (timestamp != null && System.currentTimeMillis() > (Long.parseLong(timestamp) + 1000 * 60 * 5)) {
+                log.info("请求已过期!(timestamp)");
+                Result<Object> errorObj = ResultUtil.error(org.apache.http.HttpStatus.SC_REQUEST_TIMEOUT,
+                        "该请求已超时！");
+                exchange.getResponse().setStatusCode(HttpStatus.REQUEST_TIMEOUT);
+                return exchange
+                        .getResponse()
+                        .writeWith(Mono.just(exchange.getResponse()
+                                .bufferFactory()
+                                // jackson Object--》byte[]
+                                .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
+            }
+
+            // 校验nonce
+            if (nonceUtil.isExist(nonce)) {
+                log.info("nonce已被使用!");
+                Result<Object> errorObj = ResultUtil.error(org.apache.http.HttpStatus.SC_REQUEST_TIMEOUT,
+                        "该请求已失效！");
+                exchange.getResponse().setStatusCode(HttpStatus.REQUEST_TIMEOUT);
+                return exchange
+                        .getResponse()
+                        .writeWith(Mono.just(exchange.getResponse()
+                                .bufferFactory()
+                                // jackson Object--》byte[]
+                                .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
+            } else {
+                // 将nonce存入redis 设置过期时间
+                Boolean b = nonceUtil.setValue(nonce, 6 * 60);
+                log.info("Has nonce been set?:{}", b);
+            }
+
+            // 构建签名串
+            String message = request.getMethod() + "\n" +
+                    request.getPath() + "\n" +
+                    X_ACCESS_KEY + ":" + accessKey + "\n" +
+                    X_TIMESTAMP + ":" + timestamp + "\n" +
+                    X_NONCE + ":" + nonce;
+            log.info("\n签名串：\n {}", message);
+
+            String generatedSignature = commonService.generateSignature(message, user);
             log.info("服务端验证签名:{}", generatedSignature);
 
             if (!generatedSignature.equals(signature)) {
                 log.info("签名不一致");
+                Result<Object> errorObj = ResultUtil.error(org.apache.http.HttpStatus.SC_UNAUTHORIZED,
+                        "签名不匹配，请求可能被篡改！");
+                // 设置响应的内容
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
+                return exchange
+                        .getResponse()
+                        .writeWith(Mono.just(exchange.getResponse()
+                                .bufferFactory()
+                                // jackson Object--》byte[]
+                                .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
             }
 
             // 没有该请求头 不是在线调用 扣金币
@@ -157,11 +203,15 @@ public class CustomGlobalFilter implements GlobalFilter {
                 boolean success = deductGoldCoin(interfaceInfoId, user);
                 // 失败
                 if (!success) {
-                    exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
-                    String responseBody = "{\"code\":400,\"result\":null,\"message\":\"果币不足\"}";
-                    DataBuffer buffer = exchange.getResponse().bufferFactory()
-                            .wrap(responseBody.getBytes(StandardCharsets.UTF_8));
-                    return exchange.getResponse().writeWith(Mono.just(buffer));
+                    Result<Object> errorObj = ResultUtil.error(org.apache.http.HttpStatus.SC_UNAUTHORIZED,
+                            "果币不足，请充值！");
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange
+                            .getResponse()
+                            .writeWith(Mono.just(exchange.getResponse()
+                                    .bufferFactory()
+                                    // jackson Object--》byte[]
+                                    .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
                 }
             }
             return handleResponse(exchange, chain, interfaceInfoId, user);
@@ -172,53 +222,8 @@ public class CustomGlobalFilter implements GlobalFilter {
         }
     }
 
-    private Map<String, String> parseMultipartFormData(byte[] bodyBytes, String contentType) {
-        Map<String, String> formData = new HashMap<>();
-        try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(bodyBytes);
-            MultipartStream multipartStream = new MultipartStream(inputStream,
-                    getBoundary(contentType).getBytes(StandardCharsets.UTF_8), 4096, null);
-            boolean nextPart = multipartStream.skipPreamble();
-            while (nextPart) {
-                String header = multipartStream.readHeaders();
-                if (header.contains("form-data; name=\"accessKey\"")) {
-                    String accessKey = readMultipartContentAsString(multipartStream);
-                    formData.put("accessKey", accessKey);
-                } else if (header.contains("form-data; name=\"signature\"")) {
-                    String signature = readMultipartContentAsString(multipartStream);
-                    formData.put("signature", signature);
-                } else {
-                    multipartStream.discardBodyData();
-                }
-                nextPart = multipartStream.readBoundary();
-            }
-        } catch (IOException e) {
-            log.error("解析multipart/form-data请求体时发生错误", e);
-        }
-        return formData;
-    }
-
-    private String readMultipartContentAsString(MultipartStream multipartStream) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        multipartStream.readBodyData(outputStream);
-        return outputStream.toString(StandardCharsets.UTF_8);
-    }
-
-    private String getBoundary(String contentType) {
-        String boundary = null;
-        String[] params = contentType.split(";");
-        for (String param : params) {
-            param = param.trim();
-            if (param.startsWith("boundary=")) {
-                boundary = param.substring("boundary=".length());
-                break;
-            }
-        }
-        return boundary;
-    }
-
     private Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,
-                                     Long interfaceInfoId, User user) {
+                                      Long interfaceInfoId, User user) {
         try {
             ServerHttpResponse originalResponse = exchange.getResponse();
             HttpStatus statusCode = (HttpStatus) originalResponse.getStatusCode();
@@ -230,7 +235,7 @@ public class CustomGlobalFilter implements GlobalFilter {
             if (statusCode == HttpStatus.OK) {
                 ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
                     @Override
-                    public Mono<Void> writeWith( Publisher<? extends DataBuffer> body) {
+                    public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                         log.info("body instanceof Flux: {}", (body instanceof Flux));
 
                         if (body instanceof Flux) {
@@ -245,7 +250,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                                         // 对响应进行处理和响应后操作
                                         String data = new String(content, StandardCharsets.UTF_8);
                                         log.info("响应结果：{}", data);
-                                        Response response = null;
+                                        Result response = null;
                                         // 返回svg二维码处理
                                         if (isSvg(data)) {
                                             // 接口计数
@@ -253,7 +258,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                                         } else {
                                             // 其他JSON返回处理
                                             try {
-                                                response = JSON.parseObject(data, Response.class);
+                                                response = JSON.parseObject(data, Result.class);
                                             } catch (JSONException e) {
                                                 log.error("JSON解析错误: ", e);
                                             }
