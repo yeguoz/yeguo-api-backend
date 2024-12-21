@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static icu.yeguo.apicommon.constant.common.*;
 import static icu.yeguo.yeguoapi.utils.IsAdminUtil.isAdmin;
 
 @Slf4j
@@ -88,16 +89,22 @@ public class InterfaceInfoController {
 
 
     @PostMapping("onlineInvoking")
-    public Result<String> onlineInvoking(@RequestParam("accessKey") String accessKey,
-                                         @RequestParam("signature") String signature,
-                                         @RequestPart("invokingRequest") InvokingRequest invokingRequest,
-                                         @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+    public Result<String> onlineInvoking(@RequestPart("invokingRequest") InvokingRequest invokingRequest,
+                                         @RequestPart(value = "file", required = false) MultipartFile file,
+                                         HttpServletRequest request) throws IOException {
         /*
          * InvokingRequest: {irp:[{},{}],method:"string",url:"string"}
          * */
+        String signature = request.getHeader(X_SIGNATURE);
+        String accessKey = request.getHeader(X_ACCESS_KEY);
+        String timestamp = request.getHeader(X_TIMESTAMP);
+        String nonce = request.getHeader(X_NONCE);
+
         log.info("invokingRequest:{}", invokingRequest);
         log.info("irp:{}", Arrays.toString(invokingRequest.getIrp()));
         log.info("accessKey:{}", accessKey);
+        log.info("timestamp:{}", timestamp);
+        log.info("nonce:{}", nonce);
         log.info("signature:{}", signature);
 
         InvokingRequestParams[] irp = invokingRequest.getIrp();
@@ -105,41 +112,52 @@ public class InterfaceInfoController {
         HashMap<String, Object> paramMap = new HashMap<>();
 
         // GET 请求
-        if ("GET".equals(invokingRequest.getMethod())) {
+        if (GET.equals(invokingRequest.getMethod())) {
             // 请求中携带的请求参数,网关处验证
-            paramMap.put("accessKey", accessKey);
-            paramMap.put("signature", signature);
-            // 接口中定义的请求参数，接口处调用
             for (InvokingRequestParams item : irp) {
                 paramMap.put(item.getName(), item.getValue());
             }
             result = HttpRequest.get(invokingRequest.getUrl())
-                    .header("X-Online-invoking","GET")
-                    .form(paramMap)//表单内容
+                    .header(X_ONLINE_INVOKING,GET)
+                    .header(X_ACCESS_KEY,accessKey)
+                    .header(X_TIMESTAMP,timestamp)
+                    .header(X_NONCE,nonce)
+                    .header(X_SIGNATURE,signature)
+                    .form(paramMap)
                     .timeout(6 * 60 * 60 * 1000)//超时，毫秒
-                    .execute().body();
-        } else if ("POST".equals(invokingRequest.getMethod())) {
-            paramMap.put("accessKey", accessKey);
-            paramMap.put("signature", signature);
+                    .execute()
+                    .body();
+        } else if (POST.equals(invokingRequest.getMethod())) {
             for (InvokingRequestParams item : irp) {
                 paramMap.put(item.getName(), item.getValue());
             }
+            // 上传文件请求
             if (file != null) {
                 File tempFile = File.createTempFile("upload", file.getOriginalFilename());
                 file.transferTo(tempFile);
-                paramMap.put("file", tempFile);
+                paramMap.put(FILE, tempFile);
                 result = HttpRequest.post(invokingRequest.getUrl())
-                        .header("X-Online-invoking","POST")
                         .header("Content-Type", "multipart/form-data")
+                        .header(X_ONLINE_INVOKING,POST)
+                        .header(X_ACCESS_KEY,accessKey)
+                        .header(X_TIMESTAMP,timestamp)
+                        .header(X_NONCE,nonce)
+                        .header(X_SIGNATURE,signature)
                         .form(paramMap)
                         .timeout(6 * 60 * 60 * 1000)
-                        .execute().body();
-            }else {
+                        .execute()
+                        .body();
+            }else { // 其他POST请求
                 result = HttpRequest.post(invokingRequest.getUrl())
-                        .header("X-Online-invoking","POST")
+                        .header(X_ONLINE_INVOKING,POST)
+                        .header(X_ACCESS_KEY,accessKey)
+                        .header(X_TIMESTAMP,timestamp)
+                        .header(X_NONCE,nonce)
+                        .header(X_SIGNATURE,signature)
                         .form(paramMap)
                         .timeout(6 * 60 * 60 * 1000)
-                        .execute().body();
+                        .execute()
+                        .body();
             }
         }
         return ResultUtils.success(result);
