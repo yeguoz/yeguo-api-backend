@@ -57,7 +57,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>icu.yeguo.yeguoapiinterface.APIInterfaceApplication</mainClass>
+                    <mainClass>icu.yeguo.yeguoapiinterface.ApiInterfaceApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
