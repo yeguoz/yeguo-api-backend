@@ -40,7 +40,9 @@ public class CommonServiceImpl implements CommonService {
 
     @Override
     public String generateSignature(String message, User user) {
+        log.info("secretKey:{}", user.getSecretKey());
         HMac mac = new HMac(HmacAlgorithm.HmacSHA256, user.getSecretKey().getBytes());
+        log.info("签名：{}",mac.digestHex(message));
         return mac.digestHex(message);
     }
 
