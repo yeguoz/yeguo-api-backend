@@ -1,7 +1,5 @@
 package icu.yeguo.apigateway.filter;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import icu.yeguo.apicommon.model.entity.User;
 import icu.yeguo.apicommon.service.CommonService;
@@ -237,7 +235,6 @@ public class CustomGlobalFilter implements GlobalFilter {
                     @Override
                     public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                         log.info("body instanceof Flux: {}", (body instanceof Flux));
-
                         if (body instanceof Flux) {
                             Flux<DataBuffer> fluxBody = (Flux<DataBuffer>) body;
 
@@ -250,35 +247,9 @@ public class CustomGlobalFilter implements GlobalFilter {
                                         // 对响应进行处理和响应后操作
                                         String data = new String(content, StandardCharsets.UTF_8);
                                         log.info("响应结果：{}", data);
-                                        Result response = null;
-                                        // 返回svg二维码处理
-                                        if (isSvg(data)) {
-                                            // 接口计数
-                                            invoking(interfaceInfoId);
-                                        } else {
-                                            // 其他JSON返回处理
-                                            try {
-                                                response = JSON.parseObject(data, Result.class);
-                                            } catch (JSONException e) {
-                                                log.error("JSON解析错误: ", e);
-                                            }
-                                            // 调用接口成功后 处理调用次数
-                                            if (response != null && response.getCode() == 200) {
-                                                invoking(interfaceInfoId);
-                                            }
-                                            // 调用成功 但是失败返还金币
-                                            if (response != null && response.getCode() != 200) {
-                                                Long goldCoins = commonService.returnGoldCoins(interfaceInfoId, user);
-                                                if (goldCoins < 0) {
-                                                    log.error("果币返还失败");
-                                                } else {
-                                                    log.info("果币返还成功，当前果币：" + goldCoins);
-                                                }
-                                            }
-                                        }
-
-                                        DataBuffer newBuffer = bufferFactory.wrap(content);
-                                        return super.writeWith(Mono.just(newBuffer));
+                                        // 接口计数，并扣费
+                                        invoking(interfaceInfoId);
+                                        return super.writeWith(Mono.just(bufferFactory.wrap(content)));
                                     });
                         } else {
                             return super.writeWith(body);
