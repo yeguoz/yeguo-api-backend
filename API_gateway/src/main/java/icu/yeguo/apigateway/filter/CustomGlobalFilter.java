@@ -167,7 +167,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                                 .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
             } else {
                 // 将nonce存入redis 设置过期时间
-                Boolean b = nonceUtil.setValue(nonce, 6 * 60);
+                Boolean b = nonceUtil.setValue(nonce, 10 * 60);
                 log.info("Has nonce been set?:{}", b);
             }
 
@@ -212,7 +212,7 @@ public class CustomGlobalFilter implements GlobalFilter {
                                     .wrap(new ObjectMapper().writeValueAsBytes(errorObj))));
                 }
             }
-            return handleResponse(exchange, chain, interfaceInfoId, user);
+            return handleResponse(exchange, chain, interfaceInfoId);
         } catch (Exception e) {
             log.error("处理请求时发生异常", e);
             exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -221,7 +221,7 @@ public class CustomGlobalFilter implements GlobalFilter {
     }
 
     private Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain,
-                                      Long interfaceInfoId, User user) {
+                                      Long interfaceInfoId) {
         try {
             ServerHttpResponse originalResponse = exchange.getResponse();
             HttpStatus statusCode = (HttpStatus) originalResponse.getStatusCode();
