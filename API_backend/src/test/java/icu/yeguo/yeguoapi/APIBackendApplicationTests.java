@@ -22,8 +22,35 @@ import javax.mail.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
 
+import static icu.yeguo.apicommon.constant.common.*;
 class APIBackendApplicationTests {
+
+    @Test
+    void testRequest() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        System.out.println("timestamp::" + timestamp);
+        String nonce = String.valueOf(UUID.randomUUID());
+        System.out.println("nonce::" + nonce);
+        String message = "GET\n/api/app/weibo/hot\n" + X_ACCESS_KEY + ":" + "290F6AA4F0BFE8F584DE60D25E56706F\n" +
+                X_TIMESTAMP + ":" + timestamp + "\n" + X_NONCE + ":" + nonce;
+        System.out.println("message::" + message);
+
+        HMac mac = new HMac(HmacAlgorithm.HmacSHA256, "3F661CAD463534FC5634D095F81AC605".getBytes());
+        String signature = mac.digestHex(message);
+        System.out.println("signature::" + signature);
+        String result = HttpRequest.get("http://localhost:8081/api/app/weibo/hot")
+                .header(X_ACCESS_KEY, "290F6AA4F0BFE8F584DE60D25E56706F")
+                .header(X_TIMESTAMP, timestamp)
+                .header(X_NONCE, nonce)
+                .header(X_SIGNATURE, signature)
+                .timeout(6 * 60 * 60 * 1000)//超时，毫秒
+                .execute()
+                .body();
+        System.out.println(result);
+    }
+
     @Test
     void timeTest() {
         // 获取当前时间的毫秒时间戳
@@ -47,7 +74,7 @@ class APIBackendApplicationTests {
         // 生成签名
         String testStr = "7F48461FA9DB04287F8DF2C21CE39BB77DFF6FD641F8434ECCCEC5DA3BB05637";
         // 此处密钥如果有非ASCII字符
-        byte[] key = SecretConstant.SIGNATURE_KEY.getBytes();
+        byte[] key = "sdfsdsfds".getBytes();
         HMac mac = new HMac(HmacAlgorithm.HmacMD5, key);
 
         String macHex = mac.digestHex(testStr);
