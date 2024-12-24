@@ -7,9 +7,3 @@ spring:
     multipart:
       max-file-size: 3MB
       max-request-size: 3MB
-
-yeguo:
-  api:
-    access-key: CB9CF36F3EFD11FB5A197DDACF316477
-    secret-key: 641129389C10A6D9516511353A1516EB
-    gateway: "https://gw.yeguo.icu"

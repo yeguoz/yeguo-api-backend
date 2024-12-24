@@ -40,7 +40,6 @@ dubbo:
     port: -1
   registry:
     id: nacos-registry
-    # todo 线上修改为服务器内网地址，参考nacos启动后的链接
     address: nacos://localhost:8848
 
 yeguo:
