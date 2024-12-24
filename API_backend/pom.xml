@@ -24,6 +24,7 @@
             <groupId>icu.yeguo</groupId>
             <artifactId>API_common</artifactId>
             <version>0.0.1</version>
+            <scope>compile</scope>
         </dependency>
         <!-- dubbo -->
         <dependency>
