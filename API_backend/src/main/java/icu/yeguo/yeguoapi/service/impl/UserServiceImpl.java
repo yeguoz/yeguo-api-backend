@@ -53,9 +53,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 用户注册
      *
-     * @param userAccount
-     * @param userPassword
-     * @param checkPassword
      * @return long
      */
     @Override
@@ -120,9 +117,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 用户登录
      *
-     * @param userAccount
-     * @param userPassword
-     * @param req
      * @return UserVO
      */
     @Override
@@ -164,9 +158,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         // 返回脱敏对象
         UserVO userVO = getUserVO(user);
-        // 设置session
+
+        // 如果当前会话存在，销毁后创建新的会话
         HttpSession session = req.getSession();
-        session.setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
+        session.invalidate(); // 销毁当前会话
+        HttpSession newSession = req.getSession(true);// 创建新的会话
+        newSession.setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
+
 
         return userVO;
     }
@@ -174,7 +172,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 按id查询用户
      *
-     * @param id
      * @return User
      */
     @Override
@@ -220,7 +217,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 按id删除用户
      *
-     * @param id
      * @return int
      */
     @Override
@@ -239,7 +235,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 按id修改用户信息
      *
-     * @param userUpdateRequest
      * @return int
      */
     @Override
@@ -269,7 +264,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 获取当前用户信息
      *
-     * @param req
      * @return UserVO
      */
     @Override
@@ -293,7 +287,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 按查询参数动态查询
      *
-     * @param userQueryRequest
      * @return ArrayList<UserVO>
      */
     @Override
