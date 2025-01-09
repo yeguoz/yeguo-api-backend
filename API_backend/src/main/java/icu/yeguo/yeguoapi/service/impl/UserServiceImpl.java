@@ -380,8 +380,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         checkVerificationCode(verifyCode, session);
         // 校验成功，返回UserVO对象
         UserVO userVO = getUserVO(user);
-        // 设置登录态
-        session.setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
+        // 如果当前会话存在，销毁后创建新的会话
+        session.invalidate(); // 销毁当前会话
+        HttpSession newSession = req.getSession(true);// 创建新的会话
+        newSession.setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
         return userVO;
     }
 
