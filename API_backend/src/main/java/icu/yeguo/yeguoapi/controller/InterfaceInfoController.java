@@ -36,7 +36,7 @@ public class InterfaceInfoController {
     /*
      *  注册
      * */
-    @PostMapping("register")
+    @PostMapping("/register")
     public Result<Long> interfaceInfoRegister(@RequestBody InterfaceInfoRegisterRequest interfaceInfoRegisterRequest, HttpServletRequest req) {
         if (interfaceInfoRegisterRequest == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
@@ -48,7 +48,7 @@ public class InterfaceInfoController {
     /*
      *  删除
      * */
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public Result<Integer> removeById(@PathVariable("id") Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
@@ -75,7 +75,7 @@ public class InterfaceInfoController {
     /*
      *  查询
      * */
-    @GetMapping("dynamicQuery")
+    @GetMapping("/dynamicQuery")
     public Result<ArrayList<InterfaceInfoVO>> dynamicQuery(InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
         ArrayList<InterfaceInfoVO> interfaceInfoVOList;
 
@@ -88,7 +88,7 @@ public class InterfaceInfoController {
     }
 
 
-    @PostMapping("onlineInvoking")
+    @PostMapping("/onlineInvoking")
     public Result<String> onlineInvoking(@RequestPart("invokingRequest") InvokingRequest invokingRequest,
                                          @RequestPart(value = "file", required = false) MultipartFile file,
                                          HttpServletRequest request) throws IOException {

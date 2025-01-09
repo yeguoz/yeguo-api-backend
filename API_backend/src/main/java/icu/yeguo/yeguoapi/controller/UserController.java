@@ -44,7 +44,7 @@ public class UserController {
     /*
      *  注册
      * */
-    @PostMapping("register")
+    @PostMapping("/register")
     public Result<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
@@ -65,7 +65,7 @@ public class UserController {
     /*
      *  登录
      * */
-    @PostMapping("login")
+    @PostMapping("/login")
     public Result<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
@@ -85,7 +85,7 @@ public class UserController {
     /*
      * 发送验证码
      * */
-    @PostMapping("verifyCode")
+    @PostMapping("/verifyCode")
     public Result<Integer> userEmailVerifyCode(@RequestBody VerifyCodeEmail verifyCodeEmail, HttpServletRequest req) {
         String email = verifyCodeEmail.getEmail();
         Integer result = sendVerificationEmail(email, req);
@@ -95,7 +95,7 @@ public class UserController {
     /*
      *  邮箱注册
      * */
-    @PostMapping("emailRegister")
+    @PostMapping("/emailRegister")
     public Result<Long> userEmailRegister(@RequestBody UserEmailRegisterLoginRequest userEmailRegisterLoginRequest, HttpServletRequest req) {
         if (userEmailRegisterLoginRequest == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
@@ -113,7 +113,7 @@ public class UserController {
     /*
      *  邮箱登录
      * */
-    @PostMapping("emailLogin")
+    @PostMapping("/emailLogin")
     public Result<UserVO> userEmailLogin(@RequestBody UserEmailRegisterLoginRequest userEmailRegisterLoginRequest, HttpServletRequest req) {
         if (userEmailRegisterLoginRequest == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "请求参数为空");
@@ -131,7 +131,7 @@ public class UserController {
     /*
      * 查询当前用户
      * */
-    @GetMapping("current")
+    @GetMapping("/current")
     public Result<UserVO> getCurrentUser(HttpServletRequest req) {
         UserVO userVO = userServiceImpl.getCurrentUser(req);
         return ResultUtils.success(userVO);
@@ -140,7 +140,7 @@ public class UserController {
     /*
      * 退出登录
      * */
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public Result<Integer> logout(HttpServletRequest req) {
         HttpSession session = req.getSession();
         session.invalidate();
@@ -150,7 +150,7 @@ public class UserController {
     /*
      * 查询所有用户
      * */
-    @GetMapping("dynamicQuery")
+    @GetMapping("/dynamicQuery")
     public Result<ArrayList<UserVO>> dynamicQuery(UserQueryRequest userQueryRequest, HttpServletRequest req) {
         ArrayList<UserVO> userVOList;
         if (!isAdmin(req)) {
@@ -168,7 +168,7 @@ public class UserController {
     /*
      * 删除用户
      * */
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public Result<Integer> removeById(@PathVariable("id") Long id, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
@@ -181,7 +181,7 @@ public class UserController {
     /*
      * 改
      * */
-    @PutMapping("update")
+    @PutMapping("/update")
     public Result<Integer> updateById(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest req) {
         if (!isAdmin(req)) {
             throw new BusinessException(ResponseCode.NO_AUTH_ERROR, "普通用户,无权限执行此操作");
@@ -192,7 +192,7 @@ public class UserController {
     }
 
     // 更新个人信息
-    @PutMapping("personInfoUpdate")
+    @PutMapping("/personInfoUpdate")
     public Result<Integer> personInfoUpdate(@RequestBody UserPersonUpdateParams userPersonUpdateParams) {
         // 更新成功返回值为 1
         int result = userServiceImpl.upPersonInfo(userPersonUpdateParams);
@@ -203,21 +203,21 @@ public class UserController {
     }
 
     // 更新个人密钥
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public Result<ASKeyVO> personKeysUpdate(@PathVariable("id") Long id) {
         ASKeyVO result = userServiceImpl.upASKey(id);
         return ResultUtils.success(result);
     }
 
     // 用户充值果币
-    @PutMapping("recharge/{userId}/{goldCoin}")
+    @PutMapping("/recharge/{userId}/{goldCoin}")
     public Result<Integer> recharge(@PathVariable("userId") Long userId, @PathVariable("goldCoin") Long goldCoin) {
         Integer result = userServiceImpl.recharge(userId, goldCoin);
         return ResultUtils.success(result);
     }
 
     // 忘记密码 验证邮箱
-    @PostMapping("forgetPwd/verifyCode")
+    @PostMapping("/forgetPwd/verifyCode")
     public Result<Integer> forgetPasswordVerifyCode(@RequestBody VerifyCodeEmail verifyCodeEmail,
                                                     HttpServletRequest req) {
         String email = verifyCodeEmail.getEmail();
@@ -240,7 +240,7 @@ public class UserController {
     }
 
     // 忘记密码 提交验证
-    @PutMapping("forgetPwd")
+    @PutMapping("/forgetPwd")
     public Result<Integer> forgetPassword(@RequestBody ForgetPasswordParams forgetPasswordParams,
                                           HttpServletRequest req) {
         if (forgetPasswordParams == null) {
