@@ -17,22 +17,4 @@
         <result property="idDeleted" column="id_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
-    <sql id="Base_Column_List">
-        id,order_id,user_id,
-        pay_type,money,pay_status,
-        commodity_content,create_time,update_time,
-        expire_time,id_deleted
-    </sql>
-    <insert id="oderInfoInsert"  useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO order_info (user_id,
-                                pay_type,
-                                money,
-                                commodity_content,
-                                expire_time)
-        VALUES (#{userId},
-                #{payType},
-                #{money},
-                #{commodityContent},
-                NOW() + INTERVAL 300 SECOND)
-    </insert>
 </mapper>
