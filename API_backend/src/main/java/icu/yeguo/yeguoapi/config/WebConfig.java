@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/user/emailLogin",
                         "/user/forgetPwd/verifyCode",
                         "/user/forgetPwd",
+                        "/callback/payment/notify",
                         "/v3/**",
                         "/doc.html",
                         "/webjars/**",
